@@ -6,13 +6,13 @@ python:
 - 3.5
 install: pip install -U tox-travis
 script: tox
-deploy:
-  provider: pypi
-  distributions: sdist bdist_wheel
-  user: ganariya
-  password:
-    secure: Q1S7H4rs0kgv7oqyUyyWZ2m2nTLbv4/rCnjTDfB43Cr/jfV39FQv+s7C25EaZciFqU9WW2RjJ07ykOjy+Kpjyk6BLynq/2N9QLza9aQ20sFRmTXaext20jjCh5wcpjq8w8AasJU4f+nBLZfA/MyG7BKxrqUALDk4pO+2lkP2riorEyq5swUEZw5eDhda85ZiLpTO7KyNfM3Z1aDRo/MqXgD9+BbkOGeW43aUreBBw/4/W9DS+UQwrdiydj1bhcmhhaadt/anDmVnzw5GMrsz8+5K49FuTOHfNleM/SStNv3ibn89AHCMICe+voPmXDrwkkCY9Aal35POhYSfGywyA4cZf4ecKQxLJ79Dd+lxgP9OAT09DjFy5FN53sm78gRxAXg+1cFIiG+aUMFwSGkf9B9pEVe/jaroZsrWqV4jQ53y7k6I0+FRI6XKNgtJu2ZI3r0RJmDSTwrDHyDBP9U8nD3Jqvic5mBHeQX9IRv1KwlexS8gmtnhVvzZPL8BT0USp4Hy8CFpEsYkcKLEDKxGsUVfNkl1C6/Dg9ZqJJCJrtHuk4WyQ0lm9PNAYHg6C+/9sZBgttxTEyLoLacVhTsiaeXLVDr5CSjD0lQRkDkGkD9G06/zt8cARv3zoMzVzgaN6+hkLMqC1Kr7USLGiv9yQa5Ft8UNT4evq22WJWXaRAw=
-  on:
-    tags: true
-    repo: ganariya/kiacopy
-    python: 3.8
+#deploy:
+#  provider: pypi
+#  distributions: sdist bdist_wheel
+#  user: ganariya
+#  password:
+#    secure: Q1S7H4rs0kgv7oqyUyyWZ2m2nTLbv4/rCnjTDfB43Cr/jfV39FQv+s7C25EaZciFqU9WW2RjJ07ykOjy+Kpjyk6BLynq/2N9QLza9aQ20sFRmTXaext20jjCh5wcpjq8w8AasJU4f+nBLZfA/MyG7BKxrqUALDk4pO+2lkP2riorEyq5swUEZw5eDhda85ZiLpTO7KyNfM3Z1aDRo/MqXgD9+BbkOGeW43aUreBBw/4/W9DS+UQwrdiydj1bhcmhhaadt/anDmVnzw5GMrsz8+5K49FuTOHfNleM/SStNv3ibn89AHCMICe+voPmXDrwkkCY9Aal35POhYSfGywyA4cZf4ecKQxLJ79Dd+lxgP9OAT09DjFy5FN53sm78gRxAXg+1cFIiG+aUMFwSGkf9B9pEVe/jaroZsrWqV4jQ53y7k6I0+FRI6XKNgtJu2ZI3r0RJmDSTwrDHyDBP9U8nD3Jqvic5mBHeQX9IRv1KwlexS8gmtnhVvzZPL8BT0USp4Hy8CFpEsYkcKLEDKxGsUVfNkl1C6/Dg9ZqJJCJrtHuk4WyQ0lm9PNAYHg6C+/9sZBgttxTEyLoLacVhTsiaeXLVDr5CSjD0lQRkDkGkD9G06/zt8cARv3zoMzVzgaN6+hkLMqC1Kr7USLGiv9yQa5Ft8UNT4evq22WJWXaRAw=
+#  on:
+#    tags: true
+#    repo: ganariya/kiacopy
+#    python: 3.8
