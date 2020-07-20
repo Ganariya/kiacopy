@@ -1,5 +1,6 @@
 import math
 
+
 class Solution(list):
 
     def __init__(self, gamma, theta, inf, sd_base):
@@ -19,17 +20,15 @@ class Solution(list):
     def cost(self):
         avg = self.avg
         sd = self.sd
+        if sd < self.sd_base:
+            sd = (sd ** self.theta)
         return avg + self.gamma * sd
 
     @property
     def sd(self):
         avg = self.avg
         sd = sum([(s.cost - avg) ** 2 for s in self]) / len(self)
-        # if sd < self.sd_base:
-        #     sd = sd ** self.theta
-        #     sd = sd ** self.theta
-        return sd
-        # return math.sqrt(sd)
+        return math.sqrt(sd)
 
     @property
     def sum(self):

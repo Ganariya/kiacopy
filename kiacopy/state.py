@@ -1,6 +1,6 @@
 class State:
 
-    def __init__(self, graph, ants, limit, gen_size, colony, rho, q, top, problem, gamma, theta, inf):
+    def __init__(self, graph, ants, limit, gen_size, colony, rho, q, top, problem, gamma, theta, inf, sd_base):
         self.graph = graph
         self.ants = ants
         self.limit = limit
@@ -14,6 +14,11 @@ class State:
         self.theta = theta
         self.inf = inf
         self.gamma = gamma
+        self.sd_base = sd_base
+        self.fail_indices = []
+        self.fail_cnt = 0
+        self.improve_cnt = 0
+        self.solution_history = []
         self.solutions = None
         self.record = None
         self.previous_record = None

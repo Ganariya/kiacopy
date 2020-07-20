@@ -8,7 +8,7 @@ from .solution import Solution
 
 class Solver:
 
-    def __init__(self, rho=.03, q=1, gamma=1, theta=2, inf=1e100, sd_base=1e30, top=None, plugins=None):
+    def __init__(self, rho=.03, q=1, gamma=1, theta=2, inf=1e100, sd_base=1e20, top=None, plugins=None):
         self.rho = rho
         self.q = q
         self.top = top
@@ -16,10 +16,8 @@ class Solver:
         self.theta = theta
         self.inf = inf
         self.sd_base = sd_base
-        self.fail_indices = []
-        self.fail_cnt = 0
-        self.solution_history = []
         self.plugins = collections.OrderedDict()
+        self.state = None
         if plugins:
             self.add_plugins(*plugins)
 
@@ -38,13 +36,11 @@ class Solver:
         gen_size = gen_size or len(graph.nodes)
         ants = colony.get_ants(gen_size)
         state = State(graph=graph, ants=ants, limit=limit, gen_size=gen_size,
-                      colony=colony, rho=self.rho, q=self.q, top=self.top, problem=problem, gamma=self.gamma, theta=self.theta, inf=self.inf)
+                      colony=colony, rho=self.rho, q=self.q, top=self.top, problem=problem, gamma=self.gamma, theta=self.theta, inf=self.inf, sd_base=self.sd_base)
         self._call_plugins('start', state=state)
-
         prev_cost = self.inf
 
         print("-----optimize begin-----")
-
 
         for iterate_index in utils.looper(limit):
             copy_graph = copy.deepcopy(graph)
@@ -52,28 +48,31 @@ class Solver:
 
             self._call_plugins('before', state=state)
 
-            if is_best_opt and solution.cost > self.inf:
+            if is_best_opt and solution.cost > self.sd_base:
                 self.opt2(copy_graph, solution, graph)
 
-            if solution.cost > self.inf:
-                self.fail_cnt += 1
-                self.fail_indices.append(iterate_index)
+            if solution.cost > self.sd_base:
+                state.fail_cnt += 1
+                state.fail_indices.append(iterate_index)
 
             if is_update:
                 self.pheromone_update(solution, state, graph)
 
             if prev_cost > solution.cost:
                 prev_cost = solution.cost
+                state.improve_cnt += 1
                 print(iterate_index, "サイクル  ", solution, "\n")
                 yield solution
 
-            self.solution_history.append(solution)
+            state.solution_history.append(solution)
 
             if (iterate_index + 1) % 100 == 0:
                 print("-----", iterate_index + 1, "times passed-----\n\n")
 
         self._call_plugins('finish', state=state)
-        print(self.fail_cnt, "だけ失敗しました")
+        self.state = state
+        print(state.improve_cnt, "だけ更新しました")
+        print(state.fail_cnt, "だけ失敗しました")
 
     def find_solution(self, graph, ants, is_res):
         for ant in ants:
@@ -91,7 +90,7 @@ class Solver:
         return solution
 
     def pheromone_update(self, solution, state, graph):
-        if solution.sd < self.sd_base:
+        if solution.cost < self.sd_base:
             next_pheromones = collections.defaultdict(float)
             for circuit in solution:
                 for edge in circuit:
@@ -99,6 +98,7 @@ class Solver:
             for edge in state.graph.edges:
                 p = graph.edges[edge]['pheromone']
                 graph.edges[edge]['pheromone'] = (1 - self.rho) * p + next_pheromones[edge]
+
 
     def opt2(self, graph, solution, origin):
         edge_count = collections.defaultdict(int)
