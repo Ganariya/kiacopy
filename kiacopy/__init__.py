@@ -7,6 +7,7 @@ from .ants.randomant import RandomAnt
 from .ants.sensitiveant import SensitiveAnt
 from . import plugins
 from . import utils
+from . import ants
 
 __author__ = """ganariya"""
 __email__ = 'ganariya2525@gmail.com'
