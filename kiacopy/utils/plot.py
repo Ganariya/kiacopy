@@ -25,13 +25,17 @@ class Plotter:
     def plot(self, is_level=True):
         """Create and show the plot."""
         plt.figure()
-        plt.title('Solutions (stats)')
-        self.plot_solutions()
+        plt.title('Circuits')
+        self.plot_circuits()
 
         if is_level:
             plt.figure()
             plt.title('Edge Pheromone (levels)')
             self.plot_pheromone_levels(legend=False)
+
+        plt.figure()
+        plt.title('Solution')
+        self.plot_solution()
 
         plt.figure()
         plt.title('Edge Pheromone (stats)')

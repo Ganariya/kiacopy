@@ -35,15 +35,16 @@ class Solver:
 
         gen_size = gen_size or len(graph.nodes)
         ants = colony.get_ants(gen_size)
-        state = State(graph=graph, ants=ants, limit=limit, gen_size=gen_size,
+        state = State(graph=copy.deepcopy(graph), ants=ants, limit=limit, gen_size=gen_size,
                       colony=colony, rho=self.rho, q=self.q, top=self.top, problem=problem, gamma=self.gamma, theta=self.theta, inf=self.inf, sd_base=self.sd_base)
         self._call_plugins('start', state=state)
         prev_cost = self.inf
 
-        print("-----optimize begin-----")
+        print("-----optimize begin-----\n")
 
         for iterate_index in utils.looper(limit):
             copy_graph = copy.deepcopy(graph)
+
             solution = self.find_solution(copy_graph, state.ants, is_res=is_res)
 
             self._call_plugins('before', state=state)
@@ -54,6 +55,8 @@ class Solver:
             if solution.cost > self.sd_base:
                 state.fail_cnt += 1
                 state.fail_indices.append(iterate_index)
+            else:
+                state.success_cnt += 1
 
             if is_update:
                 self.pheromone_update(solution, state, graph)
@@ -61,18 +64,26 @@ class Solver:
             if prev_cost > solution.cost:
                 prev_cost = solution.cost
                 state.improve_cnt += 1
-                print(iterate_index, "サイクル  ", solution, "\n")
+                print(iterate_index, "cycle: ", solution, "\n")
                 yield solution
 
             state.solution_history.append(solution)
+            state.solution = solution
+            state.ants = ants
+            state.circuits = list(solution)
+
+            # なんかコピーしないとフェロモンが0になる　デストラクタ？
+            state.graph = copy.deepcopy(graph)
+            self._call_plugins('iteration', state=state)
 
             if (iterate_index + 1) % 100 == 0:
                 print("-----", iterate_index + 1, "times passed-----\n\n")
 
         self._call_plugins('finish', state=state)
         self.state = state
-        print(state.improve_cnt, "だけ更新しました")
-        print(state.fail_cnt, "だけ失敗しました")
+        print("Improve Count: ", state.improve_cnt)
+        print("Fail Count: ", state.fail_cnt)
+        print("-----optimize end-----\n")
 
     def find_solution(self, graph, ants, is_res):
         for ant in ants:
@@ -98,7 +109,6 @@ class Solver:
             for edge in state.graph.edges:
                 p = graph.edges[edge]['pheromone']
                 graph.edges[edge]['pheromone'] = (1 - self.rho) * p + next_pheromones[edge]
-
 
     def opt2(self, graph, solution, origin):
         edge_count = collections.defaultdict(int)
@@ -168,27 +178,14 @@ class Solver:
                         graph.edges[d, b]['weight'] = self.inf
 
     def add_plugin(self, plugin):
-        """Add a single solver plugin.
-
-        If plugins have the same name, only the last one added is kept.
-
-        :param plugin: the plugin to add
-        :type plugin: :class:`acopy.plugins.SolverPlugin`
-        """
         self.add_plugins(plugin)
 
     def add_plugins(self, *plugins):
-        """Add one or more solver plugins."""
         for plugin in plugins:
             plugin.initialize(self)
             self.plugins[plugin.__class__.__qualname__] = plugin
 
     def get_plugins(self):
-        """Return the added plugins.
-
-        :return: plugins previously added
-        :rtype: list
-        """
         return self.plugins.values()
 
     def _call_plugins(self, hook, **kwargs):

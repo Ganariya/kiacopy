@@ -326,7 +326,7 @@ class StatsRecorder(SolverPlugin):
     def __init__(self, save_path=".", file_name="stats"):
         super().__init__()
         self.stats = collections.defaultdict(list)
-        self.data = {'solutions': set()}
+        self.data = {'circuits': set()}
         self.save_path = save_path
         self.file_name = os.path.join(save_path, file_name + ".json")
 
@@ -343,14 +343,18 @@ class StatsRecorder(SolverPlugin):
                 'max': max(levels),
                 'avg': total_pheromone / num_edges,
             },
-            'solutions': {
-                'best': None,
-                'worst': None,
-                'avg': None,
-                'global_best': None,
+            'circuits': {
+                'min_circuit': None,
+                'max_circuit': None,
+            },
+            'solution': {
+                'average_cost': None,
+                'sum_cost': None,
+                'sd_cost': None,
+                'weighted_cost': None
             },
             'unique_solutions': {
-                'total': len(self.data['solutions']),
+                'total': len(self.data['circuits']),
                 'iteration': 0,
                 'new': 0,
             }
@@ -359,17 +363,19 @@ class StatsRecorder(SolverPlugin):
 
     def on_iteration(self, state):
         levels = [edge['pheromone'] for edge in state.graph.edges.values()]
-        distances = [solution.cost for solution in state.solutions]
+        distances = [(circuit.cost if circuit.cost <= 1e30 else None) for circuit in state.circuits]
 
-        solutions = set(state.solutions)
-        solutions_seen = self.data['solutions']
+        circuits = set()
+        for circuit in state.circuits:
+            if circuit.cost <= 1e30:
+                circuits.add(circuit)
+        solutions_seen = self.data['circuits']
 
         old_count = len(solutions_seen)
-        solutions_seen.update(solutions)
+        solutions_seen.update(circuits)
         num_new_solutions = len(solutions_seen) - old_count
 
         num_edges = len(levels)
-        num_ants = len(distances)
         total_pheromone = sum(levels)
 
         stats = {
@@ -380,15 +386,20 @@ class StatsRecorder(SolverPlugin):
                 'max': max(levels),
                 'avg': total_pheromone / num_edges,
             },
-            'solutions': {
-                'best': min(distances),
-                'worst': max(distances),
-                'avg': sum(distances) / num_ants,
-                'global_best': state.record.cost,
+            'circuits': {
+                'min_circuit': min(distances) if (None not in distances) else None,
+                'max_circuit': max(distances) if (None not in distances) else None,
+                'diff_circuit': max(distances) - min(distances) if (None not in distances) else None
+            },
+            'solution': {
+                'average_cost': state.solution.avg if state.solution.avg <= 1e30 else None,
+                'sum_cost': state.solution.sum if state.solution.sum <= 1e30 else None,
+                'sd_cost': state.solution.sd if state.solution.sd <= 1e30 else None,
+                'weighted_cost': state.solution.cost if state.solution.cost <= 1e30 else None,
             },
             'unique_solutions': {
-                'total': len(self.data['solutions']),
-                'iteration': len(solutions),
+                'total': len(self.data['circuits']),
+                'iteration': len(circuits),
                 'new': num_new_solutions,
             }
         }

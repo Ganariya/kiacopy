@@ -18,8 +18,10 @@ class State:
         self.fail_indices = []
         self.fail_cnt = 0
         self.improve_cnt = 0
+        self.success_cnt = 0
+        self.solution = None
         self.solution_history = []
-        self.solutions = None
+        self.circuits = None
         self.record = None
         self.previous_record = None
         self.is_new_record = False
