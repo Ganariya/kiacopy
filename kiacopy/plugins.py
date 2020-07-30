@@ -299,10 +299,21 @@ class DrawGraph(SolverPlugin):
             self.draw(state)
 
     def draw(self, state):
-        plt.figure()
+        plt.figure(dpi=200)
         _, ax = plt.subplots()
         nx.draw_networkx_nodes(state.graph, pos=self.pos, ax=ax)
-        nx.draw_networkx_edges(state.graph, pos=self.pos, edgelist=state.record.path, arrows=False)
+
+        colors = ["red", "blue", "green", "pink", "orange", "yellow", "brown", "purple", "gray", "gold", "silver"]
+
+        for i in range(len(state.solution)):
+            r,g,b = random.random(), random.random(), random.random()
+            nx.draw_networkx_edges(state.graph, pos=self.pos, edgelist=state.solution[i].path, arrows=True, edge_color=colors[i])
+
+
+        # for circuit in state.solution:
+        #     r,g,b = random.random(), random.random(), random.random()
+        #     nx.draw_networkx_edges(state.graph, pos=self.pos, edgelist=circuit.path, arrows=True, edge_color=(r, g, b))
+
         if self.is_label:
             labels = {x: str(x) for x in state.graph.nodes}
             nx.draw_networkx_labels(state.graph, pos=self.pos, labels=labels, font_color='white')
@@ -353,6 +364,18 @@ class StatsRecorder(SolverPlugin):
                 'sd_cost': None,
                 'weighted_cost': None
             },
+            'average': {
+                'average_cost': None,
+            },
+            'sum': {
+                'sum_cost': None,
+            },
+            'sd': {
+                'sd_cost': None,
+            },
+            'weighted': {
+                'weighted_cost': None
+            },
             'unique_solutions': {
                 'total': len(self.data['circuits']),
                 'iteration': 0,
@@ -395,6 +418,18 @@ class StatsRecorder(SolverPlugin):
                 'average_cost': state.solution.avg if state.solution.avg <= 1e30 else None,
                 'sum_cost': state.solution.sum if state.solution.sum <= 1e30 else None,
                 'sd_cost': state.solution.sd if state.solution.sd <= 1e30 else None,
+                'weighted_cost': state.solution.cost if state.solution.cost <= 1e30 else None,
+            },
+            'average': {
+                'average_cost': state.solution.avg if state.solution.avg <= 1e30 else None,
+            },
+            'sum': {
+                'sum_cost': state.solution.sum if state.solution.sum <= 1e30 else None,
+            },
+            'sd': {
+                'sd_cost': state.solution.sd if state.solution.sd <= 1e30 else None,
+            },
+            'weighted': {
                 'weighted_cost': state.solution.cost if state.solution.cost <= 1e30 else None,
             },
             'unique_solutions': {
