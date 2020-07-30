@@ -72,7 +72,6 @@ class Solver:
             state.ants = ants
             state.circuits = list(solution)
 
-            # なんかコピーしないとフェロモンが0になる　デストラクタ？
             state.graph = copy.deepcopy(graph)
             self._call_plugins('iteration', state=state)
 

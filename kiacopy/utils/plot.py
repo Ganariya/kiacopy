@@ -38,6 +38,22 @@ class Plotter:
         self.plot_solution()
 
         plt.figure()
+        plt.title('Average')
+        self.plot_average()
+
+        plt.figure()
+        plt.title('Sum')
+        self.plot_sum()
+
+        plt.figure()
+        plt.title('Sd')
+        self.plot_sd()
+
+        plt.figure()
+        plt.title('Weighted')
+        self.plot_weighted()
+
+        plt.figure()
         plt.title('Edge Pheromone (stats)')
         self.plot_edge_pheromone()
 
