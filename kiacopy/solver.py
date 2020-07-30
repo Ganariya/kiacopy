@@ -36,7 +36,7 @@ class Solver:
         gen_size = gen_size or len(graph.nodes)
         ants = colony.get_ants(gen_size)
         state = State(graph=copy.deepcopy(graph), ants=ants, limit=limit, gen_size=gen_size,
-                      colony=colony, rho=self.rho, q=self.q, top=self.top, problem=problem, gamma=self.gamma, theta=self.theta, inf=self.inf, sd_base=self.sd_base)
+                      colony=colony, rho=self.rho, q=self.q, top=self.top, problem=problem, gamma=self.gamma, theta=self.theta, inf=self.inf, sd_base=self.sd_base, is_update=is_update, is_res=is_res, is_best_opt=is_best_opt)
         self._call_plugins('start', state=state)
         prev_cost = self.inf
 
@@ -57,6 +57,7 @@ class Solver:
                 state.fail_indices.append(iterate_index)
             else:
                 state.success_cnt += 1
+                state.success_indices.append(iterate_index)
 
             if is_update:
                 self.pheromone_update(solution, state, graph)
@@ -64,6 +65,7 @@ class Solver:
             if prev_cost > solution.cost:
                 prev_cost = solution.cost
                 state.improve_cnt += 1
+                state.improve_indices.append(iterate_index)
                 print(iterate_index, "cycle: ", solution, "\n")
                 yield solution
 
