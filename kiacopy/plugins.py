@@ -156,6 +156,65 @@ class Opt2Swap(SolverPlugin):
                 self.swaps += 1
 
 
+class ConvertStateToJson(SolverPlugin):
+    def __init__(self, save_path='json_data', leading='', name='data'):
+        super().__init__()
+        self.file_name = os.path.join(save_path, f'{name}_{leading}.json')
+        if not os.path.isdir(save_path):
+            os.mkdir(save_path)
+
+    def convert(self, state):
+        result = {}
+        result['graph_size'] = len(state.graph)
+        result['graph_name'] = state.problem.name
+        result['limit'] = state.limit
+        result['gen_size'] = state.gen_size
+        result['rho'] = state.rho
+        result['q'] = state.q
+        result['top'] = state.top
+        result['gamma'] = state.gamma
+        result['theta'] = state.theta
+        result['inf'] = state.inf
+        result['sd_base'] = state.sd_base
+        result['is_update'] = state.is_update
+        result['is_res'] = state.is_res
+        result['is_best_opt'] = state.is_best_opt
+        result['fail_indices'] = state.fail_indices
+        result['fail_cnt'] = state.fail_cnt
+        result['improve_indices'] = state.improve_indices
+        result['improve_cnt'] = state.improve_cnt
+        result['success_indices'] = state.success_indices
+        result['success_cnt'] = state.success_cnt
+        result['history'] = []
+
+        for i in range(len(state.solution_history)):
+
+            his = {}
+            his['avg'] = state.solution_history[i].avg
+            his['cost'] = state.solution_history[i].cost
+            his['sd'] = state.solution_history[i].cost
+            his['sum'] = state.solution_history[i].sum
+
+            his['circuits'] = []
+            for circuit in state.solution_history[i]:
+                pro = {}
+                pro['cost'] = circuit.cost
+                pro['nodes'] = circuit.nodes
+                pro['path'] = circuit.path
+                pro['alpha'] = circuit.ant.alpha
+                pro['beta'] = circuit.ant.beta
+                his['circuits'].append(pro)
+
+            result['history'].append(his)
+
+        return result
+
+    def on_finish(self, state):
+        result = self.convert(state)
+        with open(self.file_name, mode='w') as f:
+            json.dump(result, f, ensure_ascii=False)
+
+
 class PeriodicActionPlugin(SolverPlugin):
     def __init__(self, period=50):
         super().__init__(period=period)
@@ -306,9 +365,8 @@ class DrawGraph(SolverPlugin):
         colors = ["red", "blue", "green", "pink", "orange", "yellow", "brown", "purple", "gray", "gold", "silver"]
 
         for i in range(len(state.solution)):
-            r,g,b = random.random(), random.random(), random.random()
+            r, g, b = random.random(), random.random(), random.random()
             nx.draw_networkx_edges(state.graph, pos=self.pos, edgelist=state.solution[i].path, arrows=True, edge_color=colors[i])
-
 
         # for circuit in state.solution:
         #     r,g,b = random.random(), random.random(), random.random()
