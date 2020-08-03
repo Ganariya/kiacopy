@@ -26,7 +26,7 @@ class Plotter:
         """Create and show the plot."""
         plt.figure()
         plt.title('Circuits')
-        self.plot_circuits()
+        self.plot_circuits(linestyle='None', marker='.')
 
         if is_level:
             plt.figure()
@@ -35,23 +35,23 @@ class Plotter:
 
         plt.figure()
         plt.title('Solution')
-        self.plot_solution()
+        self.plot_solution(linestyle='None', marker='.')
 
         plt.figure()
         plt.title('Average')
-        self.plot_average()
+        self.plot_average(linestyle='None', marker='.')
 
         plt.figure()
         plt.title('Sum')
-        self.plot_sum()
+        self.plot_sum(linestyle='None', marker='.')
 
         plt.figure()
         plt.title('Sd')
-        self.plot_sd()
+        self.plot_sd(linestyle='None', marker='.')
 
         plt.figure()
         plt.title('Weighted')
-        self.plot_weighted()
+        self.plot_weighted(linestyle='None', marker='.')
 
         plt.figure()
         plt.title('Edge Pheromone (stats)')

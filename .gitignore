@@ -105,7 +105,6 @@ ENV/
 .vscode/
 .idea/
 tsp_model/
-**/**.json
 
 check.py
 

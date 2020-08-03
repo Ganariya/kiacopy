@@ -365,7 +365,6 @@ class DrawGraph(SolverPlugin):
         colors = ["red", "blue", "green", "pink", "orange", "yellow", "brown", "purple", "gray", "gold", "silver"]
 
         for i in range(len(state.solution)):
-            r, g, b = random.random(), random.random(), random.random()
             nx.draw_networkx_edges(state.graph, pos=self.pos, edgelist=state.solution[i].path, arrows=True, edge_color=colors[i])
 
         # for circuit in state.solution:

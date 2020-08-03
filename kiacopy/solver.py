@@ -31,7 +31,7 @@ class Solver:
             best = solution
         return best
 
-    def optimize(self, graph, colony, gen_size=None, limit=None, problem=None, is_update=False, is_best_opt=False, is_res=False):
+    def optimize(self, graph, colony, gen_size=None, limit=None, problem=None, is_update=False, is_best_opt=False, is_res=False, graph_name=''):
 
         gen_size = gen_size or len(graph.nodes)
         ants = colony.get_ants(gen_size)
@@ -39,6 +39,7 @@ class Solver:
                       colony=colony, rho=self.rho, q=self.q, top=self.top, problem=problem, gamma=self.gamma, theta=self.theta, inf=self.inf, sd_base=self.sd_base, is_update=is_update, is_res=is_res, is_best_opt=is_best_opt)
         self._call_plugins('start', state=state)
         prev_cost = self.inf
+        best_solution = None
 
         print("-----optimize begin-----\n")
 
@@ -66,6 +67,7 @@ class Solver:
                 prev_cost = solution.cost
                 state.improve_cnt += 1
                 state.improve_indices.append(iterate_index)
+                best_solution = solution
                 print(iterate_index, "cycle: ", solution, "\n")
                 yield solution
 
@@ -82,9 +84,17 @@ class Solver:
 
         self._call_plugins('finish', state=state)
         self.state = state
-        print("Improve Count: ", state.improve_cnt)
-        print("Fail Count: ", state.fail_cnt)
-        print("-----optimize end-----\n")
+
+        print("-----result start-----\n")
+        print(f"graph:{graph_name}, K:{gen_size}")
+        print(f"update:{is_update}, 2-best:{is_best_opt}, res:{is_res}")
+        print(f"gamma:{state.gamma}, theta:{state.theta}, rho:{state.rho}, q:{state.q}, limit:{limit}")
+        print(f"Improve:{state.improve_cnt}, Fail:{state.fail_cnt}, Success:{state.success_cnt}")
+        if best_solution is not None:
+            print(f"avg:{best_solution.avg}, sd:{best_solution.sd}, sum:{best_solution.sum}, cost:{best_solution.cost}")
+            for circuit in best_solution: print(circuit)
+            print()
+        print("-----result end-----\n\n")
 
     def find_solution(self, graph, ants, is_res):
         for ant in ants:
