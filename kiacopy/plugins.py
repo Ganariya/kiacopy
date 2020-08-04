@@ -335,7 +335,7 @@ class TimeLimit(EarlyTerminationPlugin):
 
 
 class DrawGraph(SolverPlugin):
-    def __init__(self, problem, save_path='.', leading='', is_iteration=False, is_finish=True, is_save=False, is_label=False):
+    def __init__(self, problem, save_path='.', leading='', is_iteration=False, is_finish=True, is_save=False, is_label=False, is_each=False, is_consecutive=False):
         super().__init__()
         self.pos = problem.display_data or problem.node_coords
         self.save_path = save_path
@@ -344,6 +344,8 @@ class DrawGraph(SolverPlugin):
         self.is_finish = is_finish
         self.is_save = is_save
         self.is_label = is_label
+        self.is_each = is_each
+        self.is_consecutive = is_consecutive
         if not os.path.isdir(save_path):
             os.mkdir(save_path)
 
@@ -358,16 +360,23 @@ class DrawGraph(SolverPlugin):
             self.draw(state)
 
     def draw(self, state):
+        self.draw_all(state)
+        if self.is_each:
+            self.draw_each(state)
+        if self.is_consecutive:
+            self.draw_consecutive(state)
+
+    def draw_all(self, state):
         plt.figure(dpi=200)
         _, ax = plt.subplots()
         nx.draw_networkx_nodes(state.graph, pos=self.pos, ax=ax)
 
         colors = ["red", "blue", "green", "pink", "orange", "yellow", "brown", "purple", "gray", "gold", "silver"]
 
-        for i in range(len(state.solution)):
-            nx.draw_networkx_edges(state.graph, pos=self.pos, edgelist=state.solution[i].path, arrows=True, edge_color=colors[i])
+        for i in range(len(state.best_solution)):
+            nx.draw_networkx_edges(state.graph, pos=self.pos, edgelist=state.best_solution[i].path, arrows=True, edge_color=colors[i])
 
-        # for circuit in state.solution:
+        # for circuit in state.best_solution:
         #     r,g,b = random.random(), random.random(), random.random()
         #     nx.draw_networkx_edges(state.graph, pos=self.pos, edgelist=circuit.path, arrows=True, edge_color=(r, g, b))
 
@@ -375,7 +384,41 @@ class DrawGraph(SolverPlugin):
             labels = {x: str(x) for x in state.graph.nodes}
             nx.draw_networkx_labels(state.graph, pos=self.pos, labels=labels, font_color='white')
         ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
+        plt.title("all paths")
         plt.show()
+
+    def draw_each(self, state):
+        colors = ["red", "blue", "green", "pink", "orange", "yellow", "brown", "purple", "gray", "gold", "silver"]
+
+        for i in range(len(state.best_solution)):
+            plt.figure(dpi=200)
+            _, ax = plt.subplots()
+            nx.draw_networkx_nodes(state.graph, pos=self.pos, ax=ax)
+            nx.draw_networkx_edges(state.graph, pos=self.pos, edgelist=state.best_solution[i].path, arrows=True, edge_color=colors[i])
+            if self.is_label:
+                labels = {x: str(x) for x in state.graph.nodes}
+                nx.draw_networkx_labels(state.graph, pos=self.pos, labels=labels, font_color='white')
+            ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
+            plt.title(f"each path: {i + 1} {state.best_solution[i].cost}")
+            plt.show()
+
+    def draw_consecutive(self, state):
+        colors = ["red", "blue", "green", "pink", "orange", "yellow", "brown", "purple", "gray", "gold", "silver"]
+        N = len(state.graph)
+
+        for i in range(N):
+            plt.figure(dpi=200)
+            _, ax = plt.subplots()
+            nx.draw_networkx_nodes(state.graph, pos=self.pos, ax=ax)
+            for j in range(len(state.best_solution)):
+                nx.draw_networkx_edges(state.graph, pos=self.pos, edgelist=state.best_solution[j].path[0:i + 1], arrows=True, edge_color=colors[j])
+
+            if self.is_label:
+                labels = {x: str(x) for x in state.graph.nodes}
+                nx.draw_networkx_labels(state.graph, pos=self.pos, labels=labels, font_color='white')
+            ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
+            plt.title(f"consecutive paths: {i + 1}")
+            plt.show()
 
     def save(self, state):
         plt.figure(dpi=200)

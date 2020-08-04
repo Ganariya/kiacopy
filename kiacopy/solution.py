@@ -11,7 +11,7 @@ class Solution(list):
         self.sd_base = sd_base
 
     def __repr__(self):
-        text = f"K = {len(self)}, avg={self.avg}, sd={self.sd}, cost={self.cost} \n"
+        text = f"K = {len(self)}, avg={self.avg}, sd={self.sd}, sum={self.sum}, cost={self.cost} \n"
         text += "  ".join([str(s.cost) for s in self])
         text += "\n"
         return text

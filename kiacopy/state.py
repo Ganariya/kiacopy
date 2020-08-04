@@ -24,6 +24,7 @@ class State:
         self.success_indices = []
         self.success_cnt = 0
         self.solution = None
+        self.best_solution = None
         self.solution_history = []
         self.circuits = None
         self.record = None
