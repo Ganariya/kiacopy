@@ -1,4 +1,5 @@
 import collections
+import time
 import copy
 
 from .state import State
@@ -82,11 +83,13 @@ class Solver:
             if (iterate_index + 1) % 100 == 0:
                 print("-----", iterate_index + 1, "times passed-----\n\n")
 
-        self._call_plugins('finish', state=state)
+        state.end_time = time.perf_counter()
+        state.elapsed = state.end_time - state.start_time
         self.state = state
+        self._call_plugins('finish', state=state)
 
         print("-----result start-----\n")
-        print(f"graph:{graph_name}, K:{gen_size}")
+        print(f"graph:{graph_name}, K:{gen_size}, time:{state.elapsed}")
         print(f"update:{is_update}, 2-best:{is_best_opt}, res:{is_res}")
         print(f"gamma:{state.gamma}, theta:{state.theta}, rho:{state.rho}, q:{state.q}, limit:{limit}")
         print(f"Improve:{state.improve_cnt}, Fail:{state.fail_cnt}, Success:{state.success_cnt}")

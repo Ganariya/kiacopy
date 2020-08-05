@@ -1,3 +1,5 @@
+import time
+
 class State:
 
     def __init__(self, graph, ants, limit, gen_size, colony, rho, q, top, problem, gamma, theta, inf, sd_base, is_update, is_res, is_best_opt):
@@ -23,6 +25,9 @@ class State:
         self.improve_cnt = 0
         self.success_indices = []
         self.success_cnt = 0
+        self.start_time = time.perf_counter()
+        self.end_time = None
+        self.elapsed = None
         self.solution = None
         self.best_solution = None
         self.solution_history = []
