@@ -186,8 +186,19 @@ class ConvertStateToJson(SolverPlugin):
         result['improve_cnt'] = state.improve_cnt
         result['success_indices'] = state.success_indices
         result['success_cnt'] = state.success_cnt
-        result['history'] = []
+        result['best_solution'] = {}
+        if state.best_solution is not None:
+            result['best_solution']['cost'] = state.best_solution.cost
+            result['best_solution']['avg'] = state.best_solution.avg
+            result['best_solution']['sd'] = state.best_solution.sd
+            result['best_solution']['sum'] = state.best_solution.sum
+        else:
+            result['best_solution']['cost'] = None
+            result['best_solution']['avg'] = None
+            result['best_solution']['sd'] = None
+            result['best_solution']['sum'] = None
 
+        result['history'] = []
         for i in range(len(state.solution_history)):
 
             his = {}
@@ -374,6 +385,9 @@ class DrawGraph(SolverPlugin):
 
         colors = ["red", "blue", "green", "pink", "orange", "yellow", "brown", "purple", "gray", "gold", "silver"]
 
+        if state.best_solution is None:
+            return
+
         for i in range(len(state.best_solution)):
             nx.draw_networkx_edges(state.graph, pos=self.pos, edgelist=state.best_solution[i].path, arrows=True, edge_color=colors[i])
 
@@ -390,6 +404,9 @@ class DrawGraph(SolverPlugin):
 
     def draw_each(self, state):
         colors = ["red", "blue", "green", "pink", "orange", "yellow", "brown", "purple", "gray", "gold", "silver"]
+
+        if state.best_solution is None:
+            return
 
         for i in range(len(state.best_solution)):
             plt.figure(dpi=200)
@@ -411,6 +428,10 @@ class DrawGraph(SolverPlugin):
             plt.figure(dpi=200)
             _, ax = plt.subplots()
             nx.draw_networkx_nodes(state.graph, pos=self.pos, ax=ax)
+
+            if state.best_solution is None:
+                return
+
             for j in range(len(state.best_solution)):
                 nx.draw_networkx_edges(state.graph, pos=self.pos, edgelist=state.best_solution[j].path[0:i + 1], arrows=True, edge_color=colors[j])
 
