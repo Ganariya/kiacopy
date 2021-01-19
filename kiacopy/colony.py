@@ -1,27 +1,28 @@
+from typing import List
 from kiacopy.ants.ant import Ant
 from kiacopy.ants.randomant import RandomAnt
 from kiacopy.ants.sensitiveant import SensitiveAnt
 
 
 class Colony:
-    def __init__(self, alpha=1, beta=3, random=0, sensitive=0, q_0=0.2, tau_0=0.01, rho=0.03):
-        self.alpha = alpha
-        self.beta = beta
-        self.random = random
-        self.sensitive = sensitive
-        self.q_0 = q_0
-        self.tau_0 = tau_0
-        self.rho = rho
+    def __init__(self, alpha: float = 1, beta: float = 3, random: float = 0, sensitive: float = 0, q_0: float = 0.2, tau_0: float = 0.01, rho: float = 0.03) -> None:
+        self.alpha: float = alpha
+        self.beta: float = beta
+        self.random: float = random
+        self.sensitive: float = sensitive
+        self.q_0: float = q_0
+        self.tau_0: float = tau_0
+        self.rho: float = rho
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (f'{self.__class__.__name__}(alpha={self.alpha}, '
                 f'beta={self.beta})')
 
-    def get_ants(self, count):
-        ants = []
-        num_of_random = int(count * self.random)
-        num_of_sensitive = int(count * self.sensitive)
-        num_of_normal = count - num_of_random - num_of_sensitive
+    def get_ants(self, count: int) -> List[Ant]:
+        ants: List[Ant] = []
+        num_of_random: int = int(count * self.random)
+        num_of_sensitive: int = int(count * self.sensitive)
+        num_of_normal: int = count - num_of_random - num_of_sensitive
         for __ in range(num_of_random):
             ants.append(RandomAnt(alpha=self.alpha, beta=self.beta, q_0=self.q_0))
         for __ in range(num_of_sensitive):

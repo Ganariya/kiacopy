@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import functools
+from typing import DefaultDict
 
 try:
     import matplotlib.pyplot as plt
@@ -19,10 +20,10 @@ class Plotter:
     :param dict stats: map of stats by name
     """
 
-    def __init__(self, stats):
-        self.stats = stats
+    def __init__(self, stats: DefaultDict):
+        self.stats: DefaultDict = stats
 
-    def plot(self, is_level=True):
+    def plot(self, is_level: bool = True) -> None:
         """Create and show the plot."""
         plt.figure()
         plt.title('Circuits')
@@ -63,7 +64,7 @@ class Plotter:
 
         plt.show()
 
-    def save(self, save_path='.', leading='', is_level=True):
+    def save(self, save_path: str = '.', leading: str = '', is_level: bool = True) -> None:
         """Create and save the plot."""
 
         if not os.path.isdir(save_path):
@@ -90,11 +91,11 @@ class Plotter:
         self.plot_unique_solutions()
         plt.savefig(os.path.join(save_path, leading + '_uniqueness.png'))
 
-    def _plot(self, stat, ax=None, **kwargs):
+    def _plot(self, stat, ax=None, **kwargs) -> None:
         data = self._extract_and_process(stat)
         data.plot(ax=ax or plt.gca(), **kwargs)
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str):
         if name.startswith('plot_'):
             __, stat = name.split('_', 1)
             return functools.partial(self._plot, stat)

@@ -3,14 +3,14 @@ import sys
 import itertools
 
 
-def looper(limit):
+def looper(limit: int) -> itertools.count:
     """Return an optionally endless list of indexes."""
     if limit is not None:
         return range(limit)
     return itertools.count()
 
 
-def is_plot_enabled():
+def is_plot_enabled() -> bool:
     """Return true if plotting is enabled.
 
     Plotting requires matplotlib and pandas to be installed.
@@ -32,5 +32,5 @@ def is_plot_enabled():
 is_plot_enabled.cache = None
 
 
-def positive(value):
+def positive(value: float) -> float:
     return max(value, sys.float_info.min)

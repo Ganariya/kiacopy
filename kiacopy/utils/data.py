@@ -3,12 +3,13 @@ import collections
 import json
 import string
 import math
+from typing import List
 
 import tsplib95
 import networkx
 
 
-def get_formats():
+def get_formats() -> List[str]:
     supported = ['json', 'tsplib95']
     for d in dir(networkx):
         if d.startswith('read_') and callable(getattr(networkx, d)):
@@ -18,18 +19,18 @@ def get_formats():
     return supported
 
 
-def read_json(path):
+def read_json(path: str) -> networkx.Graph:
     with open(path) as f:
         data = json.load(f)
     return networkx.Graph(data)
 
 
-def read_tsplib95(path):
+def read_tsplib95(path: str) -> networkx.Graph:
     problem = tsplib95.load_problem(path)
     return problem.get_graph()
 
 
-def read_graph_data(path, format_):
+def read_graph_data(path: str, format_: str) -> networkx.Graph:
     if format_ == 'json':
         read_format = read_json
     elif format_ == 'tsplib95':
@@ -39,7 +40,7 @@ def read_graph_data(path, format_):
     return read_format(path)
 
 
-def get_demo_graph():
+def get_demo_graph() -> networkx.Graph:
     TEST_COORDS_33 = [
         (34.021150, -84.267249), (34.021342, -84.363437),
         (34.022585, -84.362150), (34.022718, -84.361903),

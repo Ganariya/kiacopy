@@ -1,28 +1,35 @@
-import collections
 import time
 import copy
 
-from kiacopy.state import State
+from typing import Optional, List, DefaultDict, Tuple, Final
+from collections import OrderedDict, defaultdict
+
+from networkx import Graph
+from tsplib95.models import Problem
 from kiacopy import utils
+from kiacopy.ants import Ant
+from kiacopy.state import State
 from kiacopy.solution import Solution
+from kiacopy.colony import Colony
+from kiacopy.solverplugin import SolverPlugin
 
 
 class Solver:
 
-    def __init__(self, rho=.03, q=1, gamma=1, theta=2, inf=1e100, sd_base=1e20, top=None, plugins=None):
-        self.rho = rho
-        self.q = q
-        self.top = top
-        self.gamma = gamma
-        self.theta = theta
-        self.inf = inf
-        self.sd_base = sd_base
-        self.plugins = collections.OrderedDict()
-        self.state = None
+    def __init__(self, rho: float = .03, q: float = 1, gamma: float = 1, theta: float = 2, inf: float = 1e100, sd_base: float = 1e20, top: Optional[int] = None, plugins=None) -> None:
+        self.rho: float = rho
+        self.q: float = q
+        self.top: Optional[int] = top
+        self.gamma: float = gamma
+        self.theta: float = theta
+        self.inf: float = inf
+        self.sd_base: float = sd_base
+        self.plugins: OrderedDict = OrderedDict()
+        self.state: Optional[State] = None
         if plugins:
             self.add_plugins(*plugins)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (f'{self.__class__.__name__}(rho={self.rho}, q={self.q}, '
                 f'top={self.top})')
 
@@ -32,21 +39,21 @@ class Solver:
             best = solution
         return best
 
-    def optimize(self, graph, colony, gen_size=None, limit=None, problem=None, is_update=False, is_best_opt=False, is_res=False, graph_name=''):
-
-        gen_size = gen_size or len(graph.nodes)
-        ants = colony.get_ants(gen_size)
-        state = State(graph=copy.deepcopy(graph), ants=ants, limit=limit, gen_size=gen_size,
-                      colony=colony, rho=self.rho, q=self.q, top=self.top, problem=problem, gamma=self.gamma, theta=self.theta, inf=self.inf, sd_base=self.sd_base, is_update=is_update, is_res=is_res, is_best_opt=is_best_opt)
+    def optimize(self, graph: Graph, colony: Colony, limit: int, gen_size: Optional[int] = None, problem: Optional[Problem] = None, is_update: bool = False, is_best_opt: bool = False, is_res: bool = False, graph_name: str = ''):
+        gen_size: int = gen_size or len(graph.nodes)
+        ants: List[Ant] = colony.get_ants(gen_size)
+        state: State = State(graph=copy.deepcopy(graph), ants=ants, limit=limit, gen_size=gen_size,
+                             colony=colony, rho=self.rho, q=self.q, top=self.top, problem=problem, gamma=self.gamma,
+                             theta=self.theta, inf=self.inf, sd_base=self.sd_base, is_update=is_update, is_res=is_res, is_best_opt=is_best_opt)
         self._call_plugins('start', state=state)
-        prev_cost = self.inf
+        prev_cost: float = self.inf
 
         print("-----optimize begin-----\n")
 
         for iterate_index in utils.looper(limit):
-            copy_graph = copy.deepcopy(graph)
+            copy_graph: Graph = copy.deepcopy(graph)
 
-            solution = self.find_solution(copy_graph, state.ants, is_res=is_res)
+            solution: Solution = self.find_solution(copy_graph, state.ants, is_res=is_res)
 
             self._call_plugins('before', state=state)
 
@@ -64,7 +71,7 @@ class Solver:
                 self.pheromone_update(solution, state, graph)
 
             if prev_cost > solution.cost:
-                prev_cost = solution.cost
+                prev_cost: float = solution.cost
                 state.improve_cnt += 1
                 state.improve_indices.append(iterate_index)
                 state.best_solution = solution
@@ -99,7 +106,7 @@ class Solver:
             print()
         print("-----result end-----\n\n")
 
-    def find_solution(self, graph, ants, is_res):
+    def find_solution(self, graph: Graph, ants: List[Ant], is_res: bool) -> Solution:
         for ant in ants:
             ant.init_solution(graph, inf=self.inf, is_res=is_res, theta=self.theta)
         # for ant in ants:
@@ -112,14 +119,14 @@ class Solver:
         for ant in ants:
             ant.circuit.close()
             ant.erase(graph, ant.circuit.nodes[-1], ant.circuit.nodes[0])
-        solution = Solution(self.gamma, self.theta, self.inf, self.sd_base)
+        solution: Solution = Solution(self.gamma, self.theta, self.inf, self.sd_base)
         for ant in ants:
             solution.append(ant.circuit)
         return solution
 
-    def pheromone_update(self, solution, state, graph):
+    def pheromone_update(self, solution: Solution, state: State, graph: Graph) -> None:
         if solution.cost < self.sd_base:
-            next_pheromones = collections.defaultdict(float)
+            next_pheromones: DefaultDict[Tuple[int, int], float] = defaultdict(float)
             for circuit in solution:
                 for edge in circuit:
                     next_pheromones[edge] += self.q / solution.cost
@@ -127,31 +134,31 @@ class Solver:
                 p = graph.edges[edge]['pheromone']
                 graph.edges[edge]['pheromone'] = (1 - self.rho) * p + next_pheromones[edge]
 
-    def opt2(self, graph, solution, origin):
-        edge_count = collections.defaultdict(int)
+    def opt2(self, graph: Graph, solution: Solution, origin: Graph) -> None:
+        edge_count: DefaultDict[Tuple[int, int], int] = defaultdict(int)
         for circuit in solution:
             for p in circuit:
-                x = min(p[0], p[1])
-                y = max(p[0], p[1])
+                x: int = min(p[0], p[1])
+                y: int = max(p[0], p[1])
                 edge_count[(x, y)] += 1
                 edge_count[(y, x)] += 1
 
-        n = len(graph.nodes)
+        N: Final[int] = len(graph.nodes)
         for circuit in solution:
             nodes = circuit.nodes
-            for i in range(0, n):
-                best_cost = self.inf
-                best_j = -1
-                if edge_count[(nodes[i], nodes[(i + 1) % n])] > 1:
-                    for j in range(0, n):
-                        if i == j: continue
-
+            for i in range(0, N):
+                best_cost: float = self.inf
+                best_j: int = -1
+                if edge_count[(nodes[i], nodes[(i + 1) % N])] > 1:
+                    for j in range(0, N):
+                        if i == j:
+                            continue
                         ii = min(i, j)
                         jj = max(i, j)
                         a = nodes[ii]
-                        b = nodes[(ii + 1) % n]
+                        b = nodes[(ii + 1) % N]
                         c = nodes[jj]
-                        d = nodes[(jj + 1) % n]
+                        d = nodes[(jj + 1) % N]
 
                         if edge_count[a, c] == 0 and edge_count[b, d] == 0:
                             dist = origin.edges[a, c]['weight'] + origin.edges[b, d]['weight'] - origin.edges[a, b]['weight'] - origin.edges[c, d]['weight']
@@ -163,9 +170,9 @@ class Solver:
                     ii = min(i, best_j)
                     jj = max(i, best_j)
                     a = nodes[ii]
-                    b = nodes[(ii + 1) % n]
+                    b = nodes[(ii + 1) % N]
                     c = nodes[jj]
-                    d = nodes[(jj + 1) % n]
+                    d = nodes[(jj + 1) % N]
                     if edge_count[a, c] == 0 and edge_count[b, d] == 0:
                         edge_count[a, b] -= 1
                         edge_count[b, a] -= 1
@@ -178,9 +185,9 @@ class Solver:
                         nodes[ii + 1: jj + 1] = reversed(nodes[ii + 1: jj + 1])
                         circuit.path = []
                         circuit.cost = 0
-                        for k in range(n):
-                            circuit.path.append((nodes[k], nodes[(k + 1) % n]))
-                            circuit.cost += origin.edges[(nodes[k], nodes[(k + 1) % n])]['weight']
+                        for k in range(N):
+                            circuit.path.append((nodes[k], nodes[(k + 1) % N]))
+                            circuit.cost += origin.edges[(nodes[k], nodes[(k + 1) % N])]['weight']
 
                         if edge_count[a, b] == 0:
                             graph.edges[a, b]['weight'] = origin.edges[a, b]['weight']
@@ -194,7 +201,7 @@ class Solver:
                         graph.edges[b, d]['weight'] = self.inf
                         graph.edges[d, b]['weight'] = self.inf
 
-    def add_plugin(self, plugin):
+    def add_plugin(self, plugin: SolverPlugin) -> None:
         self.add_plugins(plugin)
 
     def add_plugins(self, *plugins):
@@ -205,7 +212,7 @@ class Solver:
     def get_plugins(self):
         return self.plugins.values()
 
-    def _call_plugins(self, hook, **kwargs):
+    def _call_plugins(self, hook: str, **kwargs) -> bool:
         should_stop = False
         for plugin in self.get_plugins():
             try:

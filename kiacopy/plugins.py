@@ -1,47 +1,53 @@
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 import collections
 import random
 import time
 import os
 import json
+from typing import List
+from typing import TYPE_CHECKING
 
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from .solverplugin import SolverPlugin
+from kiacopy.solverplugin import SolverPlugin
+
+if TYPE_CHECKING:
+    from networkx import Graph
+    from kiacopy.solver import Solver
+    from kiacopy.solver import State
 
 
 class Printout(SolverPlugin):
-    _ROW = '{:<10} {:<20} {}'
+    _ROW: str = '{:<10} {:<20} {}'
 
-    def initialize(self, solver):
+    def initialize(self, solver: Solver):
         super().initialize(solver)
-        self.iteration = 0
+        self.iteration: int = 0
 
-    def on_start(self, state):
-        self.iteration = 0
+    def on_start(self, state: State):
         print(f'Using {state.gen_size} ants from {state.colony}')
         print(f'Performing {state.limit} iterations:')
         print(self._ROW.format('Iteration', 'Cost', 'Solution'))
 
-    def on_iteration(self, state):
+    def on_iteration(self, state: State):
         self.iteration += 1
         line = self._ROW.format(self.iteration, state.best.cost,
                                 state.best.get_easy_id())
         print(line, end='\n' if state.is_new_record else '\r')
 
-    def on_finish(self, state):
+    def on_finish(self, state: State):
         print('Done' + ' ' * (32 + 2 * len(state.graph)))
 
 
 class InitialEdgePheromone(SolverPlugin):
 
-    def __init__(self, q=1):
+    def __init__(self, q: float = 1):
         super().__init__()
-        self.q = q
+        self.q: float = q
 
-    def on_start(self, state):
+    def on_start(self, state: State):
         for edge in state.graph.edges:
             if state.graph.edges[edge]['weight'] == 0:
                 state.graph.edges[edge]['weight'] = 1e100
@@ -50,12 +56,12 @@ class InitialEdgePheromone(SolverPlugin):
 
 class InitialNeighborPheromone(SolverPlugin):
 
-    def __init__(self, graph, start=1):
+    def __init__(self, graph: Graph, start: int = 1):
         super().__init__()
-        self.start = start
-        self.nodes = [self.start]
-        self.cost = 0
-        self.tau_0 = 0
+        self.start: int = start
+        self.nodes: List[int] = [self.start]
+        self.cost: float = 0
+        self.tau_0: float = 0
 
         n = len(graph)
         current = self.start

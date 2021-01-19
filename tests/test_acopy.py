@@ -8,8 +8,8 @@ G = problem.get_graph()
 solver = acopy.Solver()
 colony = acopy.Colony()
 
-solver.solve(G, colony, limit=100)
+solver.solve(G, colony, limit=3)
 
 solver = kiacopy.Solver()
 colony = kiacopy.Colony()
-solver.solve(G, colony, gen_size=2, limit=100)
+solver.solve(G, colony, gen_size=2, limit=3)

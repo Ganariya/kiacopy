@@ -1,40 +1,50 @@
 import time
 
+from typing import Optional, List
+
+from networkx import Graph
+from tsplib95.models import Problem
+from kiacopy.ants import Ant
+from kiacopy.colony import Colony
+from kiacopy.solution import Solution
+
+
 class State:
 
-    def __init__(self, graph, ants, limit, gen_size, colony, rho, q, top, problem, gamma, theta, inf, sd_base, is_update, is_res, is_best_opt):
-        self.graph = graph
-        self.ants = ants
-        self.limit = limit
-        self.gen_size = gen_size
-        self.colony = colony
-        self.rho = rho
-        self.q = q
-        self.top = top
-        self.problem = problem
-        self.gamma = gamma
-        self.theta = theta
-        self.inf = inf
-        self.sd_base = sd_base
-        self.is_update = is_update
-        self.is_res = is_res
-        self.is_best_opt = is_best_opt
-        self.fail_indices = []
-        self.fail_cnt = 0
-        self.improve_indices = []
-        self.improve_cnt = 0
-        self.success_indices = []
-        self.success_cnt = 0
-        self.start_time = time.perf_counter()
-        self.end_time = None
-        self.elapsed = None
-        self.solution = None
-        self.best_solution = None
-        self.solution_history = []
+    def __init__(self, graph: Graph, ants: List[Ant], limit: int, gen_size: Optional[int], colony: Colony, rho: float, q: float,
+                 top: Optional[int], problem: Optional[Problem], gamma: float, theta: float, inf: float, sd_base: float, is_update: bool, is_res: bool, is_best_opt: bool) -> None:
+        self.graph: Graph = graph
+        self.ants: List[Ant] = ants
+        self.limit: int = limit
+        self.gen_size: Optional[int] = gen_size
+        self.colony: Colony = colony
+        self.rho: float = rho
+        self.q: float = q
+        self.top: Optional[int] = top
+        self.problem: Optional[Problem] = problem
+        self.gamma: float = gamma
+        self.theta: float = theta
+        self.inf: float = inf
+        self.sd_base: float = sd_base
+        self.is_update: bool = is_update
+        self.is_res: bool = is_res
+        self.is_best_opt: bool = is_best_opt
+        self.fail_indices: List[int] = []
+        self.fail_cnt: int = 0
+        self.improve_indices: List[int] = []
+        self.improve_cnt: int = 0
+        self.success_indices: List[int] = []
+        self.success_cnt: int = 0
+        self.start_time: float = time.perf_counter()
+        self.is_new_record = False
+        self.end_time: Optional[float] = None
+        self.elapsed: Optional[float] = None
+        self.solution: Optional[Solution] = None
+        self.best_solution: Optional[Solution] = None
+        self.solution_history: List[Solution] = []
         self.circuits = None
         self.record = None
         self.previous_record = None
-        self.is_new_record = False
         self._best = None
 
     @property
