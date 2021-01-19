@@ -1,13 +1,14 @@
-from .colony import Colony
-from .solver import Solver
-from .solverplugin import SolverPlugin
-from .solution import Solution
-from .ants.ant import Ant
-from .ants.randomant import RandomAnt
-from .ants.sensitiveant import SensitiveAnt
-from . import plugins
-from . import utils
-from . import ants
+from kiacopy.colony import Colony
+from kiacopy.colony import Colony
+from kiacopy.solver import Solver
+from kiacopy.solverplugin import SolverPlugin
+from kiacopy.solution import Solution
+from kiacopy.ants.ant import Ant
+from kiacopy.ants.randomant import RandomAnt
+from kiacopy.ants.sensitiveant import SensitiveAnt
+from kiacopy import plugins
+from kiacopy import utils
+from kiacopy import ants
 
 __author__ = """ganariya"""
 __email__ = 'ganariya2525@gmail.com'

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from . import data
-from . import plot
-from .general import looper
-from .general import is_plot_enabled
-from .general import positive
+from kiacopy.utils import data
+from kiacopy.utils import plot
+from kiacopy.utils.general import looper, is_plot_enabled, positive

@@ -4,9 +4,9 @@ import bisect
 import random
 import numpy as np
 
-from ..utils import positive
-from ..circuit import Circuit
-from .ant import Ant
+from kiacopy.utils import positive
+from kiacopy.circuit import Circuit
+from kiacopy.ants.ant import Ant
 
 
 class SensitiveAnt(Ant):

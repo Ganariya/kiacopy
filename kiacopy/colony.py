@@ -1,6 +1,6 @@
-from .ants.ant import Ant
-from .ants.randomant import RandomAnt
-from .ants.sensitiveant import SensitiveAnt
+from kiacopy.ants.ant import Ant
+from kiacopy.ants.randomant import RandomAnt
+from kiacopy.ants.sensitiveant import SensitiveAnt
 
 
 class Colony:

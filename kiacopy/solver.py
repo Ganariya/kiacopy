@@ -2,9 +2,9 @@ import collections
 import time
 import copy
 
-from .state import State
-from . import utils
-from .solution import Solution
+from kiacopy.state import State
+from kiacopy import utils
+from kiacopy.solution import Solution
 
 
 class Solver:

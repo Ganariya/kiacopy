@@ -5,8 +5,8 @@ import bisect
 import random
 import copy
 
-from ..utils import positive
-from ..circuit import Circuit
+from kiacopy.utils import positive
+from kiacopy.circuit import Circuit
 
 
 class Ant:

@@ -3,9 +3,9 @@ import itertools
 import bisect
 import random
 
-from ..utils import positive
-from ..circuit import Circuit
-from .ant import Ant
+from kiacopy.utils import positive
+from kiacopy.circuit import Circuit
+from kiacopy.ants.ant import Ant
 
 
 class RandomAnt(Ant):

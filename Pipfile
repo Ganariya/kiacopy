@@ -1,0 +1,29 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+click = "*"
+networkx = "*"
+tsplib95 = "*"
+numpy = "*"
+matplotlib = "*"
+pandas = "*"
+acopy = "*"
+
+[dev-packages]
+wheel = "*"
+watchdog = "*"
+flake8 = "*"
+tox = "*"
+sphinx = "*"
+twine = "*"
+pytest = "*"
+black = "*"
+
+[requires]
+python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true

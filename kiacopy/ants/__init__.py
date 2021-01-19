@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from .ant import Ant
-from .sensitiveant import SensitiveAnt
-from .randomant import RandomAnt
+from kiacopy.ants.ant import Ant
+from kiacopy.ants.sensitiveant import SensitiveAnt
+from kiacopy.ants.randomant import RandomAnt
