@@ -1,8 +1,9 @@
 import time
 import copy
 
-from typing import Optional, List, DefaultDict, Tuple, Final
+from typing import Optional, List, DefaultDict, Tuple, Final, Generator
 from collections import OrderedDict, defaultdict
+from logging import getLogger
 
 from networkx import Graph
 from tsplib95.models import Problem
@@ -13,8 +14,15 @@ from kiacopy.solution import Solution
 from kiacopy.colony import Colony
 from kiacopy.solverplugin import SolverPlugin
 
+logger = getLogger(__name__)
+
 
 class Solver:
+    """Solver class.
+
+    API呼び出しのインターフェース
+    共通化できるパラメータはinit時に呼び出す
+    """
 
     def __init__(self, rho: float = .03, q: float = 1, gamma: float = 1, theta: float = 2, inf: float = 1e100, sd_base: float = 1e20, top: Optional[int] = None, plugins=None) -> None:
         self.rho: float = rho
@@ -33,22 +41,23 @@ class Solver:
         return (f'{self.__class__.__name__}(rho={self.rho}, q={self.q}, '
                 f'top={self.top})')
 
-    def solve(self, *args, **kwargs):
+    def solve(self, graph: Graph, colony: Colony, limit: int, *args, **kwargs):
         best = None
-        for solution in self.optimize(*args, **kwargs):
+        for solution in self.optimize(graph, colony, limit, *args, **kwargs):
             best = solution
         return best
 
-    def optimize(self, graph: Graph, colony: Colony, limit: int, gen_size: Optional[int] = None, problem: Optional[Problem] = None, is_update: bool = False, is_best_opt: bool = False, is_res: bool = False, graph_name: str = ''):
+    def optimize(self, graph: Graph, colony: Colony, limit: int, gen_size: Optional[int] = None, problem: Optional[Problem] = None, is_update: bool = False, is_best_opt: bool = False, is_res: bool = False, graph_name: str = '') -> Solution:
         gen_size: int = gen_size or len(graph.nodes)
         ants: List[Ant] = colony.get_ants(gen_size)
+        bar_str: Final[str] = "----------------"
+        prev_cost: float = self.inf
         state: State = State(graph=copy.deepcopy(graph), ants=ants, limit=limit, gen_size=gen_size,
                              colony=colony, rho=self.rho, q=self.q, top=self.top, problem=problem, gamma=self.gamma,
                              theta=self.theta, inf=self.inf, sd_base=self.sd_base, is_update=is_update, is_res=is_res, is_best_opt=is_best_opt)
-        self._call_plugins('start', state=state)
-        prev_cost: float = self.inf
 
-        print("-----optimize begin-----\n")
+        self._call_plugins('start', state=state)
+        logger.info(f"{bar_str} optimize begin {bar_str}")
 
         for iterate_index in utils.looper(limit):
             copy_graph: Graph = copy.deepcopy(graph)
@@ -75,7 +84,7 @@ class Solver:
                 state.improve_cnt += 1
                 state.improve_indices.append(iterate_index)
                 state.best_solution = solution
-                print(iterate_index, "cycle: ", solution, "\n")
+                logger.info(f'[Better Solution] {iterate_index}-cycle: {solution}')
                 yield solution
 
             state.solution_history.append(solution)
@@ -88,23 +97,25 @@ class Solver:
             self._call_plugins('iteration', state=state)
 
             if (iterate_index + 1) % 100 == 0:
-                print("-----", iterate_index + 1, "times passed-----\n\n")
+                logger.info(f"{bar_str} {iterate_index + 1} times passed {bar_str}")
 
         state.end_time = time.perf_counter()
         state.elapsed = state.end_time - state.start_time
         self.state = state
         self._call_plugins('finish', state=state)
 
-        print("-----result start-----\n")
-        print(f"graph:{graph_name}, K:{gen_size}, time:{state.elapsed}")
-        print(f"update:{is_update}, 2-best:{is_best_opt}, res:{is_res}")
-        print(f"gamma:{state.gamma}, theta:{state.theta}, rho:{state.rho}, q:{state.q}, limit:{limit}")
-        print(f"Improve:{state.improve_cnt}, Fail:{state.fail_cnt}, Success:{state.success_cnt}")
+        logger.info(f"{bar_str} result {bar_str}")
+        logger.info(f"[GRAPH_NAME] {graph_name} ")
+        logger.info(f"[NUM_OF_ANTS] {gen_size} ")
+        logger.info(f"[TIME] {state.elapsed} ")
+        logger.info(f"[UPDATE] update:{is_update} 2-best:{is_best_opt} res:{is_res}")
+        logger.info(f"[PARAMETERS] gamma:{state.gamma} theta:{state.theta} rho:{state.rho} limit:{limit}")
+        logger.info(f"[COUNT] Improve:{state.improve_cnt} Failure:{state.fail_cnt} Success:{state.success_cnt}")
         if state.best_solution is not None:
-            print(f"avg:{state.best_solution.avg}, sd:{state.best_solution.sd}, sum:{state.best_solution.sum}, cost:{state.best_solution.cost}")
-            for circuit in state.best_solution: print(circuit)
-            print()
-        print("-----result end-----\n\n")
+            logger.info(f"[BEST_SOLUTION] average:{state.best_solution.avg} sd:{state.best_solution.sd} sum:{state.best_solution.sum} cost:{state.best_solution.cost}")
+            for idx, circuit in enumerate(state.best_solution):
+                logger.info(f"circuit-{idx} {circuit}")
+        logger.info(f"{bar_str} end {bar_str}")
 
     def find_solution(self, graph: Graph, ants: List[Ant], is_res: bool) -> Solution:
         for ant in ants:

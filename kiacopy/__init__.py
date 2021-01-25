@@ -1,3 +1,4 @@
+from logging import getLogger, NullHandler
 from kiacopy.colony import Colony
 from kiacopy.colony import Colony
 from kiacopy.solver import Solver
@@ -13,3 +14,5 @@ from kiacopy import ants
 __author__ = """ganariya"""
 __email__ = 'ganariya2525@gmail.com'
 __version__ = '0.1.0'
+
+getLogger(__name__).addHandler(NullHandler())
