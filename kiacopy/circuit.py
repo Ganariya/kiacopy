@@ -15,6 +15,13 @@ if TYPE_CHECKING:
 class Circuit:
 
     def __init__(self, graph: Graph, start: int, ant: Optional[Ant] = None):
+        """init.
+
+        Notes
+        -----
+        アリ1体1体が閉路を持つ
+        init時にノードと集合にstart頂点を追加する
+        """
         self.graph: Graph = graph
         self.start: int = start
         self.ant: Optional[Ant] = ant
@@ -44,6 +51,17 @@ class Circuit:
         return hash(self.get_id())
 
     def get_easy_id(self, sep=' ', monospace=True) -> str:
+        """1から始まるたどったパスノード列を一つの文字列にして返す
+
+        Parameters
+        ----------
+        sep:str
+        monospace:bool
+
+        Returns
+        -------
+        str
+        """
         nodes: List[str] = [str(n) for n in self.get_id()]
         if monospace:
             size: int = max([len(n) for n in nodes])
@@ -51,31 +69,62 @@ class Circuit:
         return sep.join(nodes)
 
     def get_id(self) -> Tuple[int, ...]:
+        """ある閉路の最も小さいノードIDから始まる巡回路列にする.
+
+        Returns
+        -------
+        tuple of int
+            最も小さい番号ノードから始まった巡回路列
+
+        Examples
+        --------
+        (4, 1, 3, 2) -> (1, 3, 2, 4)
+        """
         first: int = min(self.nodes)
         index: int = self.nodes.index(first)
         return tuple(self.nodes[index:] + self.nodes[:index])
 
     def add_node(self, node: int) -> None:
-        """Record a node as visited.
+        """訪問したノードを記録する
 
-        :param node: the node visited
+        ノード配列と集合にノードを追加するのみ
+
+        Notes
+        -----
+        実際にパスやコストなどを計算するのは`_add_node`
+
+        Parameters
+        ----------
+        node: int
+            訪問したノード
         """
         self.nodes.append(node)
         self.visited.add(node)
         self._add_node(node)
 
     def close(self) -> None:
-        """Close the tour so that the first and last nodes are the same."""
+        """パスを閉じるらしい. """
         self._add_node(self.start)
 
     def reconstruct(self) -> None:
+        """ノード列からパス列を構築する."""
         n: int = len(self.nodes)
         self.path: List[Tuple[int, int]] = []
         for i in range(n):
             self.path.append((self.nodes[i], self.nodes[(i + 1) % n]))
 
     def _add_node(self, node: int) -> None:
-        edge = self.current, node
+        """新しい通過ノードによるパスを実際に追加する.
+
+        Parameters
+        ----------
+        node: int
+
+        Returns
+        -------
+        None
+        """
+        edge: Tuple[int, int] = self.current, node
         data = self.graph.edges[edge]
         self.path.append(edge)
         self.cost += data['weight']

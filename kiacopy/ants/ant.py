@@ -13,6 +13,8 @@ from kiacopy.circuit import Circuit
 
 
 class Ant:
+    """アリクラス."""
+
     def __init__(self, alpha: float = 1, beta: float = 3, **kwargs):
         self.alpha: float = alpha
         self.beta: float = beta
@@ -42,69 +44,169 @@ class Ant:
         return f'Ant(alpha={self.alpha}, beta={self.beta})'
 
     def init_solution(self, graph: Graph, inf: float, is_res: bool, theta: float, start: int = 1) -> None:
+        """解を作るために初期化する.
+
+        Parameters
+        ----------
+        graph:Graph
+        inf:float
+        is_res:bool
+        theta:float
+        start:int
+            スタート頂点
+
+        Returns
+        -------
+        None
+        """
+
+        # start頂点をスタートとする閉路を初期化する
         self.circuit: Circuit = Circuit(graph, start, ant=self)
-        self.init_unvisited_nodes(graph)
+        self._init_unvisited_nodes(graph)
         self.inf = inf
         self.is_res = is_res
         self.theta = theta
 
-    def init_unvisited_nodes(self, graph: Graph) -> None:
+    def _init_unvisited_nodes(self, graph: Graph) -> None:
+        """初期化時に　訪問していないスタート頂点以外のノードをリストに追加する"""
         self.unvisited: List[int] = []
         for node in graph[self.circuit.current]:
             if node not in self.circuit:
                 self.unvisited.append(node)
 
     def move(self, graph: Graph) -> None:
-        node: int = self.choose_destination(graph)
+        """アリを次の頂点に移動させる.
+
+        Notes
+        -----
+        solverクラスのfind_solutionにおいて呼び出される
+        """
+        next_node: int = self._choose_destination(graph)
         current: int = self.circuit.current
-        self.circuit.add_node(node)
-        self.unvisited.remove(node)
-        self.erase(graph, current, node)
+        self.circuit.add_node(next_node)
+        self.unvisited.remove(next_node)
+        self.erase(graph, current, next_node)
 
     def erase(self, graph: Graph, now: int, to: int) -> None:
+        """(now, to)のエッジのフェロモンと重みを独立させるために0 infにする"""
         graph.edges[now, to]['pheromone'] = 0
         graph.edges[to, now]['pheromone'] = 0
         graph.edges[now, to]['weight'] = self.inf
         graph.edges[to, now]['weight'] = self.inf
 
-    def choose_destination(self, graph: Graph) -> int:
+    def _choose_destination(self, graph: Graph) -> int:
+        """次の移動先頂点を決定する.
+
+        次の候補先のスコアを計算し (get_scores)
+        とあるアルゴリズムで1頂点選ぶ (choose_node)
+
+        Returns
+        ------
+        int
+            次の移動先である頂点を返す
+        """
         if len(self.unvisited) == 1:
             return self.unvisited[0]
-        scores: List[float] = self.get_scores(graph)
-        return self.choose_node(scores)
+        scores: List[float] = self._get_scores(graph)
+        return self._choose_node(scores)
 
-    def get_scores(self, graph: Graph) -> List[float]:
+    def _get_scores(self, graph: Graph) -> List[float]:
+        """今の頂点から移動できる移動先のスコアを計算する.
+
+        Returns
+        -------
+        list of float
+            移動先のスコアのリスト
+        """
         scores: List[float] = []
         for node in self.unvisited:
             edge: EdgeView = graph.edges[self.circuit.current, node]
-            score: float = self.score_edge(edge)
+            score: float = self._score_edge(edge)
             if self.is_res:
-                score /= self.score_residual(graph, node)
+                score /= self._score_residual(graph, node)
             scores.append(score)
         return scores
 
-    def choose_node(self, scores: List[float]) -> int:
+    def _choose_node(self, scores: List[float]) -> int:
+        """計算済みスコアを元に移動先頂点を1つ返す
+
+        スコア値に比例した乱数で選択する
+
+        Parameters
+        ----------
+        scores: list of float
+            今の頂点の移動先の計算済みスコア
+
+        Returns
+        -------
+        int
+            移動先頂点
+
+        Notes
+        -----
+        継承クラスで別の選択アルゴリズムが指定される
+        """
         choices: List[int] = self.unvisited
         total: float = sum(scores)
         cumdist: List[float] = list(itertools.accumulate(scores)) + [total]
         index: int = bisect.bisect(cumdist, random.random() * total)
         return choices[min(index, len(choices) - 1)]
 
-    def score_edge(self, edge: EdgeView) -> float:
-        weight = edge.get('weight', 1)
+    def _score_edge(self, edge: EdgeView) -> float:
+        """ある1つの移動先頂点候補の1辺のスコアを返す.
+
+        Parameters
+        ----------
+        edge: EdgeView
+            (now, next_cand)
+
+        Returns
+        -------
+        float
+            1辺のスコア
+
+        """
+        weight: float = edge.get('weight', 1)
         if weight == 0:
             return sys.float_info.max
-        pre = 1 / weight
+        pre: float = 1 / weight
         post = edge['pheromone']
         return post ** self.alpha * pre ** self.beta
 
-    def score_residual(self, graph: Graph, to: int) -> float:
+    def _score_residual(self, graph: Graph, to: int) -> float:
+        """toからの移動残余度を計算する
+
+        今の頂点をv
+        次の頂点候補をto
+        toからの移動先をtotoとする。
+
+        このとき、totoの数が小さければ小さいほどよいというのが結論。
+        この値が小さい方が良い
+
+        Parameters
+        ----------
+        graph: Graph
+        to: int
+
+        Returns
+        -------
+        float
+            toに移動する場合の移動残余度
+            toから移動できる超点数
+        """
+
+        # toから移動できるかなという候補群
         cands: Set[int] = set(copy.deepcopy(self.unvisited))
         cands.remove(to)
+
+        # (to, toto)のエッジがすでに利用されているのであれば　totoの頂点はもう可能性がないのでbadに入れる
         bad: List[int] = []
         for cand in cands:
             if graph.edges[to, cand]['weight'] >= self.inf - 1e5:
                 bad.append(cand)
+
+        # badのだめなやつはもう移動できないので、候補から取り除く
         for x in bad:
             cands.remove(x)
+
         return max(1.0, len(cands) ** self.theta)

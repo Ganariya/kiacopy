@@ -5,7 +5,20 @@ from kiacopy.solution import Solution
 from networkx import Graph
 
 
-def best_opt2(graph: Graph, solution: Solution, origin: Graph, inf: float):
+def best_opt2(graph: Graph, solution: Solution, origin: Graph, inf: float) -> None:
+    """best-opt2を実行する
+
+    Parameters
+    ----------
+    graph:Graph
+    solution:Solution
+    origin:Graph
+    inf:float
+
+    Returns
+    -------
+    None
+    """
     edge_count: DefaultDict[Tuple[int, int], int] = defaultdict(int)
     for circuit in solution:
         for p in circuit:
@@ -15,11 +28,15 @@ def best_opt2(graph: Graph, solution: Solution, origin: Graph, inf: float):
             edge_count[(y, x)] += 1
 
     N: Final[int] = len(graph.nodes)
+
     for circuit in solution:
         nodes = circuit.nodes
+
         for i in range(0, N):
             best_cost: float = inf
             best_j: int = -1
+
+            # もし2回以上使用されていたら
             if edge_count[(nodes[i], nodes[(i + 1) % N])] > 1:
                 for j in range(0, N):
                     if i == j:
@@ -31,12 +48,14 @@ def best_opt2(graph: Graph, solution: Solution, origin: Graph, inf: float):
                     c = nodes[jj]
                     d = nodes[(jj + 1) % N]
 
+                    # 交換可能であれば
                     if edge_count[a, c] == 0 and edge_count[b, d] == 0:
                         dist = origin.edges[a, c]['weight'] + origin.edges[b, d]['weight'] - origin.edges[a, b]['weight'] - origin.edges[c, d]['weight']
                         if dist < best_cost:
                             best_cost = dist
                             best_j = j
 
+            # 交換可能なものがあれば
             if best_j != -1:
                 ii = min(i, best_j)
                 jj = max(i, best_j)

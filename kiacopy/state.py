@@ -10,6 +10,7 @@ from kiacopy.solution import Solution
 
 
 class State:
+    """状態を保存する."""
 
     def __init__(self, graph: Graph, ants: List[Ant], limit: int, gen_size: Optional[int], colony: Colony, rho: float, q: float,
                  top: Optional[int], problem: Optional[Problem], gamma: float, theta: float, inf: float, sd_base: float, is_update: bool, is_res: bool, is_best_opt: bool) -> None:

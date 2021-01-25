@@ -13,7 +13,12 @@ class SensitiveAnt(Ant):
         super().__init__(alpha, beta)
         self.q_0: float = q_0
 
-    def choose_node(self, scores: List[float]) -> int:
+    def _choose_node(self, scores: List[float]) -> int:
+        """スコアの大きい頂点に移動しやすい
+
+        q_0未満であれば最大スコアの頂点に移動する
+        そうでなければ通常の比例乱数選択
+        """
         choices: List[int] = self.unvisited
         total: float = sum(scores)
         cumdist: List[float] = list(itertools.accumulate(scores)) + [total]

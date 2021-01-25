@@ -2,6 +2,13 @@ import math
 
 
 class Solution(list):
+    """1つの解.
+
+    1つの解はK本の巡回路からなる
+    リストを継承しており`s[i]`でi個目の巡回路を参照可能
+    プロパティでavg, sdなどを返す
+    プロパティでavg, sdなどを返す
+    """
 
     def __init__(self, gamma: float, theta: float, inf: float, sd_base: float) -> None:
         super().__init__()

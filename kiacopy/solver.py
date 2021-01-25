@@ -39,10 +39,10 @@ class Solver:
             self.add_plugins(*plugins)
 
     def __repr__(self) -> str:
-        return (f'{self.__class__.__name__}(rho={self.rho}, q={self.q}, '
+        return (f'{self.__class__.__name__}(rho={self.rho}, q={self.q}, gamma={self.gamma} theta={self.theta}'
                 f'top={self.top})')
 
-    def solve(self, graph: Graph, colony: Colony, limit: int, *args, **kwargs):
+    def solve(self, graph: Graph, colony: Colony, limit: int, *args, **kwargs) -> Solution:
         best = None
         for solution in self.optimize(graph, colony, limit, *args, **kwargs):
             best = solution
@@ -119,6 +119,14 @@ class Solver:
         logger.info(f"{bar_str} end {bar_str}")
 
     def find_solution(self, graph: Graph, ants: List[Ant], is_res: bool) -> Solution:
+        """ソリューションを1つ構築する.
+
+        ソリューション = K個の閉路
+
+        Notes
+        -----
+        アリはすでに用意されており初期解のみ初期化する
+        """
         for ant in ants:
             ant.init_solution(graph, inf=self.inf, is_res=is_res, theta=self.theta)
         # for ant in ants:
