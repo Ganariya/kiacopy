@@ -1,11 +1,14 @@
 import math
+from typing import List, Set, Tuple
+
+from kiacopy.circuit import Circuit
 
 
-class Solution(list):
+class Solution(List[Circuit]):
     """1つの解.
 
     1つの解はK本の巡回路からなる
-    リストを継承しており`s[i]`でi個目の巡回路を参照可能
+    リストを継承しており`s[i]`でi個目の巡回路Circuitを参照可能
     プロパティでavg, sdなどを返す
     プロパティでavg, sdなどを返す
     """
@@ -44,3 +47,17 @@ class Solution(list):
     @property
     def avg(self) -> float:
         return self.sum / len(self)
+
+    @property
+    def duplicate(self) -> int:
+        edge_set: Set[Tuple[int, int]] = set()
+        dup: int = 0
+        for circuit in self:
+            for e in circuit:
+                x, y = min(e), max(e)
+                a = (x, y)
+                if a in edge_set:
+                    dup += 1
+                else:
+                    edge_set.add(a)
+        return dup
