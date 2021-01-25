@@ -145,6 +145,8 @@ class Solver:
         return solution
 
     def pheromone_update(self, solution: Solution, state: State, graph: Graph) -> None:
+        dup = solution.duplicate
+        logger.info(f"[DUPLICATE] {dup}")
         if solution.cost < self.sd_base:
             next_pheromones: DefaultDict[Tuple[int, int], float] = defaultdict(float)
             for circuit in solution:
