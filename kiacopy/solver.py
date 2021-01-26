@@ -71,6 +71,7 @@ class Solver:
 
             if is_best_opt:
                 self.best_opt2(graph, solution, grapher)
+                self.best_opt2(graph, solution, grapher)
 
             if solution.duplicate > 0:
                 state.fail_cnt += 1
@@ -150,7 +151,7 @@ class Solver:
     def pheromone_update(self, solution: Solution, state: State, graph: Graph) -> None:
         dup = solution.duplicate
         logger.info(f"[DUPLICATE] {dup}")
-        if solution.cost < self.sd_base:
+        if dup == 0:
             next_pheromones: DefaultDict[Tuple[int, int], float] = defaultdict(float)
             for circuit in solution:
                 for edge in circuit:

@@ -18,4 +18,4 @@ solver.solve(G, colony, limit=200)
 
 solver = kiacopy.Solver()
 colony = kiacopy.Colony()
-solver.solve(G, colony, gen_size=5, limit=500, is_best_opt=True, is_update=True)
+solver.solve(G, colony, gen_size=5, limit=300, is_best_opt=True, is_update=True)
