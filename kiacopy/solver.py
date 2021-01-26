@@ -1,13 +1,14 @@
 import time
 import copy
 
-from typing import Optional, List, DefaultDict, Tuple, Final, Generator
+from typing import Optional, List, DefaultDict, Tuple, Final
 from collections import OrderedDict, defaultdict
 from logging import getLogger
 
 from networkx import Graph
 from tsplib95.models import Problem
 from kiacopy import utils
+from kiacopy.grapher import Grapher
 from kiacopy.ants import Ant
 from kiacopy.state import State
 from kiacopy.solution import Solution
@@ -61,16 +62,18 @@ class Solver:
         logger.info(f"{bar_str} optimize begin {bar_str}")
 
         for iterate_index in utils.looper(limit):
-            copy_graph: Graph = copy.deepcopy(graph)
 
-            solution: Solution = self.find_solution(copy_graph, state.ants, is_res=is_res)
+            grapher: Grapher = Grapher(graph)
+
+            solution: Solution = self.find_solution(graph, state.ants, grapher, is_res=is_res)
 
             self._call_plugins('before', state=state)
 
-            if is_best_opt and solution.cost > self.sd_base:
-                self.best_opt2(copy_graph, solution, graph)
+            if is_best_opt:
+                self.best_opt2(graph, solution, grapher)
+                self.best_opt2(graph, solution, grapher)
 
-            if solution.cost > self.sd_base:
+            if solution.duplicate > 0:
                 state.fail_cnt += 1
                 state.fail_indices.append(iterate_index)
             else:
@@ -118,27 +121,28 @@ class Solver:
                 logger.info(f"circuit-{idx} {circuit}")
         logger.info(f"{bar_str} end {bar_str}")
 
-    def find_solution(self, graph: Graph, ants: List[Ant], is_res: bool) -> Solution:
+    def find_solution(self, graph: Graph, ants: List[Ant], grapher: Grapher, is_res: bool) -> Solution:
         """ソリューションを1つ構築する.
 
         ソリューション = K個の閉路
+
+        # for ant in ants:
+        #     for i in range(len(graph.nodes) - 1):
+        #         ant.move(graph)
 
         Notes
         -----
         アリはすでに用意されており初期解のみ初期化する
         """
         for ant in ants:
-            ant.init_solution(graph, inf=self.inf, is_res=is_res, theta=self.theta)
-        # for ant in ants:
-        #     for i in range(len(graph.nodes) - 1):
-        #         ant.move(graph)
+            ant.init_solution(graph, inf=self.inf, is_res=is_res, theta=self.theta, grapher=grapher)
         for i in range(len(graph.nodes) - 1):
             for ant in ants:
-                ant.move(graph)
+                ant.move()
             ants.sort(key=lambda x: x.circuit.cost, reverse=True)
         for ant in ants:
             ant.circuit.close()
-            ant.erase(graph, ant.circuit.nodes[-1], ant.circuit.nodes[0])
+            ant.erase(ant.circuit.nodes[-1], ant.circuit.nodes[0])
         solution: Solution = Solution(self.gamma, self.theta, self.inf, self.sd_base)
         for ant in ants:
             solution.append(ant.circuit)
@@ -147,7 +151,7 @@ class Solver:
     def pheromone_update(self, solution: Solution, state: State, graph: Graph) -> None:
         dup = solution.duplicate
         logger.info(f"[DUPLICATE] {dup}")
-        if solution.cost < self.sd_base:
+        if dup == 0:
             next_pheromones: DefaultDict[Tuple[int, int], float] = defaultdict(float)
             for circuit in solution:
                 for edge in circuit:
@@ -156,8 +160,8 @@ class Solver:
                 p = graph.edges[edge]['pheromone']
                 graph.edges[edge]['pheromone'] = (1 - self.rho) * p + next_pheromones[edge]
 
-    def best_opt2(self, graph: Graph, solution: Solution, origin: Graph) -> None:
-        best_opt2(graph, solution, origin, self.inf)
+    def best_opt2(self, graph: Graph, solution: Solution, grapher: Grapher) -> None:
+        best_opt2(graph, solution, grapher)
 
     def add_plugin(self, plugin: SolverPlugin) -> None:
         self.add_plugins(plugin)

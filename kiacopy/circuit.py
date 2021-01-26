@@ -9,12 +9,13 @@ from typing import Optional, List, Set, Tuple
 if TYPE_CHECKING:
     from networkx import Graph
     from kiacopy.ants import Ant
+    from kiacopy.grapher import Grapher
 
 
 @functools.total_ordering
 class Circuit:
 
-    def __init__(self, graph: Graph, start: int, ant: Optional[Ant] = None):
+    def __init__(self, graph: Graph, start: int, grapher: Grapher, ant: Optional[Ant] = None):
         """init.
 
         Notes
@@ -29,6 +30,7 @@ class Circuit:
         self.cost: float = 0
         self.path: List[Tuple[int, int]] = []
         self.nodes: List[int] = [start]
+        self.grapher: Grapher = grapher
         self.visited: Set[int] = set(self.nodes)
 
     def __iter__(self):
@@ -113,22 +115,21 @@ class Circuit:
         for i in range(n):
             self.path.append((self.nodes[i], self.nodes[(i + 1) % n]))
 
-    def _add_node(self, node: int) -> None:
+    def _add_node(self, to_node: int) -> None:
         """新しい通過ノードによるパスを実際に追加する.
 
         Parameters
         ----------
-        node: int
+        to_node: int
 
         Returns
         -------
         None
         """
-        edge: Tuple[int, int] = self.current, node
-        data = self.graph.edges[edge]
-        self.path.append(edge)
-        self.cost += data['weight']
-        self.current = node
+        t = self.current, to_node
+        self.path.append(t)
+        self.cost += self.grapher.nwei(t)
+        self.current = to_node
 
     def trace(self, q: float, rho: float = 0) -> None:
         amount = q / self.cost
