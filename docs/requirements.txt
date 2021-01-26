@@ -3,4 +3,4 @@ matplotlib==3.3.0
 networkx==2.4
 numpy==1.19.2
 tsplib95==0.7.1
-acopy
+acopy==0.7.0
