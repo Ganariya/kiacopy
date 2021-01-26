@@ -47,10 +47,7 @@ def best_opt2(graph: Graph, solution: Solution, grapher: Grapher) -> None:
 
                     # 交換可能であれば
                     if not grapher.is_used((a, c)) and not grapher.is_used((b, d)):
-                        # if grapher.dp[a][c] == 0 and grapher.dp[b][d] == 0:
-                        # if edge_count[a, c] == 0 and edge_count[b, d] == 0:
                         dist = grapher.nwei((a, c)) + grapher.nwei((b, d)) - grapher.nwei((a, b)) - grapher.nwei((c, d))
-                        # dist = origin.edges[a, c]['weight'] + origin.edges[b, d]['weight'] - origin.edges[a, b]['weight'] - origin.edges[c, d]['weight']
                         if dist < best_cost:
                             best_cost = dist
                             best_j = j

@@ -19,7 +19,7 @@ class Grapher:
         for i in range(self.N + 1):
             for j in range(self.N + 1):
                 if self.dp[i][j] > 1:
-                    ret += f'{i}-{j}({self.dp[i][j]}) '
+                    ret += f'{i}-{j}({self.dp[i][j]}), '
         return ret
 
     def use(self, t: Tuple[int, int], is_log=False) -> None:
@@ -40,7 +40,7 @@ class Grapher:
 
     def is_used(self, t: Tuple[int, int]) -> bool:
         x, y = Grapher.minmax(t)
-        return self.dp[x][y] == 1
+        return self.dp[x][y] > 0
 
     def phe(self, t: Tuple[int, int]) -> float:
         x, y = Grapher.minmax(t)
