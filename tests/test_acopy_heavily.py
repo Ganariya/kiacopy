@@ -14,8 +14,8 @@ G = problem.get_graph()
 solver = acopy.Solver()
 colony = acopy.Colony()
 
-solver.solve(G, colony, limit=50)
+solver.solve(G, colony, limit=200)
 
 solver = kiacopy.Solver()
 colony = kiacopy.Colony()
-solver.solve(G, colony, gen_size=12, limit=100, is_best_opt=True, is_update=True)
+solver.solve(G, colony, gen_size=5, limit=500, is_best_opt=True, is_update=True)
