@@ -1,7 +1,7 @@
 import time
 import copy
 
-from typing import Optional, List, DefaultDict, Tuple, Final, Generator
+from typing import Optional, List, DefaultDict, Tuple, Final
 from collections import OrderedDict, defaultdict
 from logging import getLogger
 
