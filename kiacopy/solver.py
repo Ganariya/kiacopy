@@ -26,13 +26,14 @@ class Solver:
     共通化できるパラメータはinit時に呼び出す
     """
 
-    def __init__(self, rho: float = .03, q: float = 1, gamma: float = 1, theta: float = 2, inf: float = 1e100, top: Optional[int] = None, plugins=None) -> None:
+    def __init__(self, rho: float = .03, q: float = 1, gamma: float = 1, theta: float = 2, inf: float = 1e100, R: int = 0, top: Optional[int] = None, plugins=None) -> None:
         self.rho: float = rho
         self.q: float = q
         self.top: Optional[int] = top
         self.gamma: float = gamma
         self.theta: float = theta
         self.inf: float = inf
+        self.R: Final[int] = R
         self.plugins: OrderedDict = OrderedDict()
         self.state: Optional[State] = None
         if plugins:
@@ -55,7 +56,7 @@ class Solver:
         prev_cost: float = self.inf
         state: State = State(graph=copy.deepcopy(graph), ants=ants, limit=limit, gen_size=gen_size,
                              colony=colony, rho=self.rho, q=self.q, top=self.top, problem=problem, gamma=self.gamma,
-                             theta=self.theta, inf=self.inf, is_update=is_update, is_res=is_res, is_best_opt=is_best_opt)
+                             theta=self.theta, inf=self.inf, R=self.R, is_update=is_update, is_res=is_res, is_best_opt=is_best_opt)
 
         self._call_plugins('start', state=state)
         logger.info(f"{bar_str} optimize begin {bar_str}")
@@ -147,17 +148,16 @@ class Solver:
         return solution
 
     def pheromone_update(self, solution: Solution, state: State, graph: Graph) -> None:
-        dup = solution.duplicate
+        dup = max(0, solution.duplicate - self.R)
         logger.info(f"[DUPLICATE] {dup}")
-        if dup == 0:
-            next_pheromones: DefaultDict[Tuple[int, int], float] = defaultdict(float)
-            for circuit in solution:
-                for edge in circuit:
-                    r = Grapher.minmax(edge)
-                    next_pheromones[r] += self.q / solution.cost
-            for edge in state.graph.edges:
-                p = graph.edges[edge]['pheromone']
-                graph.edges[edge]['pheromone'] = (1 - self.rho) * p + next_pheromones[edge]
+        next_pheromones: DefaultDict[Tuple[int, int], float] = defaultdict(float)
+        for circuit in solution:
+            for edge in circuit:
+                r = Grapher.minmax(edge)
+                next_pheromones[r] += self.q / (solution.cost * (2 ** dup))
+        for edge in state.graph.edges:
+            p = graph.edges[edge]['pheromone']
+            graph.edges[edge]['pheromone'] = (1 - self.rho) * p + next_pheromones[edge]
 
     def best_opt2(self, graph: Graph, solution: Solution, grapher: Grapher) -> None:
         best_opt2(graph, solution, grapher)
