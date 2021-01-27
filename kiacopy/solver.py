@@ -71,7 +71,6 @@ class Solver:
 
             if is_best_opt:
                 self.best_opt2(graph, solution, grapher)
-                self.best_opt2(graph, solution, grapher)
 
             if solution.duplicate > 0:
                 state.fail_cnt += 1
