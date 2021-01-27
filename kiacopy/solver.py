@@ -26,14 +26,13 @@ class Solver:
     共通化できるパラメータはinit時に呼び出す
     """
 
-    def __init__(self, rho: float = .03, q: float = 1, gamma: float = 1, theta: float = 2, inf: float = 1e100, sd_base: float = 1e20, top: Optional[int] = None, plugins=None) -> None:
+    def __init__(self, rho: float = .03, q: float = 1, gamma: float = 1, theta: float = 2, inf: float = 1e100, top: Optional[int] = None, plugins=None) -> None:
         self.rho: float = rho
         self.q: float = q
         self.top: Optional[int] = top
         self.gamma: float = gamma
         self.theta: float = theta
         self.inf: float = inf
-        self.sd_base: float = sd_base
         self.plugins: OrderedDict = OrderedDict()
         self.state: Optional[State] = None
         if plugins:
@@ -56,7 +55,7 @@ class Solver:
         prev_cost: float = self.inf
         state: State = State(graph=copy.deepcopy(graph), ants=ants, limit=limit, gen_size=gen_size,
                              colony=colony, rho=self.rho, q=self.q, top=self.top, problem=problem, gamma=self.gamma,
-                             theta=self.theta, inf=self.inf, sd_base=self.sd_base, is_update=is_update, is_res=is_res, is_best_opt=is_best_opt)
+                             theta=self.theta, inf=self.inf, is_update=is_update, is_res=is_res, is_best_opt=is_best_opt)
 
         self._call_plugins('start', state=state)
         logger.info(f"{bar_str} optimize begin {bar_str}")
@@ -142,7 +141,7 @@ class Solver:
         for ant in ants:
             ant.circuit.close()
             ant.erase(ant.circuit.nodes[-1], ant.circuit.nodes[0])
-        solution: Solution = Solution(self.gamma, self.theta, self.inf, self.sd_base)
+        solution: Solution = Solution(self.gamma, self.theta, self.inf)
         for ant in ants:
             solution.append(ant.circuit)
         return solution
