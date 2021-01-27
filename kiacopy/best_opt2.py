@@ -30,9 +30,10 @@ def best_opt2(graph: Graph, solution: Solution, grapher: Grapher) -> None:
         for i in range(N):
             best_cost: float = INF
             best_j: int = -1
+            edge = Grapher.minmax((nodes[i], nodes[(i + 1) % N]))
 
             # もしi番目のノードからの移動が2回以上使用されていたら
-            if grapher.dp[nodes[i]][nodes[(i + 1) % N]] > 1:
+            if grapher.dp[edge[0]][edge[1]] > 1:
 
                 # 他の順番であるj番目のノードを調べる
                 for j in range(N):
