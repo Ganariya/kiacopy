@@ -13,12 +13,11 @@ class Solution(List[Circuit]):
     プロパティでavg, sdなどを返す
     """
 
-    def __init__(self, gamma: float, theta: float, inf: float, sd_base: float) -> None:
+    def __init__(self, gamma: float, theta: float, inf: float) -> None:
         super().__init__()
         self.gamma: float = gamma
         self.theta: float = theta
         self.inf: float = inf
-        self.sd_base: float = sd_base
 
     def __repr__(self) -> str:
         text = f"K = {len(self)}, avg={self.avg}, sd={self.sd}, sum={self.sum}, cost={self.cost} \n"
@@ -30,8 +29,7 @@ class Solution(List[Circuit]):
     def cost(self) -> float:
         avg = self.avg
         sd = self.sd
-        if sd < self.sd_base:
-            sd = (sd ** self.theta)
+        sd = (sd ** self.theta)
         return avg + self.gamma * sd
 
     @property
