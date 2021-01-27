@@ -155,7 +155,8 @@ class Solver:
             next_pheromones: DefaultDict[Tuple[int, int], float] = defaultdict(float)
             for circuit in solution:
                 for edge in circuit:
-                    next_pheromones[edge] += self.q / solution.cost
+                    r = Grapher.minmax(edge)
+                    next_pheromones[r] += self.q / solution.cost
             for edge in state.graph.edges:
                 p = graph.edges[edge]['pheromone']
                 graph.edges[edge]['pheromone'] = (1 - self.rho) * p + next_pheromones[edge]
