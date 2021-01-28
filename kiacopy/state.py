@@ -13,7 +13,7 @@ class State:
     """状態を保存する."""
 
     def __init__(self, graph: Graph, ants: List[Ant], limit: int, gen_size: Optional[int], colony: Colony, rho: float, q: float,
-                 top: Optional[int], problem: Optional[Problem], gamma: float, theta: float, inf: float, R: int, is_update: bool, is_res: bool, is_best_opt: bool) -> None:
+                 top: Optional[int], problem: Optional[Problem], gamma: float, theta: float, inf: float, R: int, is_update: bool, is_res: bool, is_best_opt: bool, is_multiple: bool) -> None:
         self.graph: Graph = graph
         self.ants: List[Ant] = ants
         self.limit: int = limit
@@ -30,6 +30,7 @@ class State:
         self.is_update: bool = is_update
         self.is_res: bool = is_res
         self.is_best_opt: bool = is_best_opt
+        self.is_multiple: bool = is_multiple
         self.fail_indices: List[int] = []
         self.fail_cnt: int = 0
         self.improve_indices: List[int] = []

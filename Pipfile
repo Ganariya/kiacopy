@@ -11,6 +11,7 @@ numpy = "*"
 matplotlib = "*"
 pandas = "*"
 acopy = "*"
+pyyaml = "*"
 
 [dev-packages]
 wheel = "*"

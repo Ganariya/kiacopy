@@ -1,0 +1,26 @@
+# ACO
+rho: 0.03
+q: 1.0
+gamma: 1.0
+theta: 2.0
+limit: 30
+inf: 1.0e+50
+gen_size: 5
+R: 3
+
+# Colony
+alpha: 1
+beta: 3
+random: 0
+sensitive: 0
+q_0: 0.2
+tau_0: 0.01
+
+# is
+is_best_opt: True
+is_res: False
+is_update: True
+is_multiple: False
+
+# None
+top: None
