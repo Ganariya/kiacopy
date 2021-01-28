@@ -1,7 +1,8 @@
 import math
-from typing import List, Set, Tuple
-
+from typing import List, Set, Tuple, Literal
 from kiacopy.circuit import Circuit
+
+COST_KIND = Literal["weighted", "avg", "sd", "sum"]
 
 
 class Solution(List[Circuit]):
@@ -13,11 +14,12 @@ class Solution(List[Circuit]):
     プロパティでavg, sdなどを返す
     """
 
-    def __init__(self, gamma: float, theta: float, inf: float) -> None:
+    def __init__(self, gamma: float, theta: float, inf: float, cost_kind: COST_KIND) -> None:
         super().__init__()
         self.gamma: float = gamma
         self.theta: float = theta
         self.inf: float = inf
+        self.cost_kind: COST_KIND = cost_kind
 
     def __repr__(self) -> str:
         text = f"K = {len(self)}, avg={self.avg}, sd={self.sd}, sum={self.sum}, cost={self.cost} \n"
@@ -27,9 +29,12 @@ class Solution(List[Circuit]):
 
     @property
     def cost(self) -> float:
+        return getattr(self, self.cost_kind)
+
+    @property
+    def weighted(self) -> float:
         avg = self.avg
-        sd = self.sd
-        sd = (sd ** self.theta)
+        sd = self.sd ** self.theta
         return avg + self.gamma * sd
 
     @property

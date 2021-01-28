@@ -37,6 +37,7 @@ class State:
         self.improve_cnt: int = 0
         self.success_indices: List[int] = []
         self.success_cnt: int = 0
+        self.duplicate_indicates: List[int] = []
         self.start_time: float = time.perf_counter()
         self.is_new_record = False
         self.end_time: Optional[float] = None

@@ -2,8 +2,9 @@ from __future__ import annotations
 from typing import Union
 
 import yaml
+from kiacopy.solution import COST_KIND
 
-Accepted = Union[str, float, int, bool, None]
+Accepted = Union[str, float, int, bool, COST_KIND, None]
 
 
 class Parameter:

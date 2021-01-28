@@ -7,6 +7,7 @@ limit: 30
 inf: 1.0e+50
 gen_size: 5
 R: 3
+cost_kind: sum
 
 # Colony
 alpha: 1
