@@ -15,6 +15,7 @@ from kiacopy.solution import Solution
 from kiacopy.colony import Colony
 from kiacopy.solverplugin import SolverPlugin
 from kiacopy.best_opt2 import best_opt2
+from kiacopy.parameter import Parameter
 
 logger = getLogger(__name__)
 
@@ -26,13 +27,22 @@ class Solver:
     共通化できるパラメータはinit時に呼び出す
     """
 
-    def __init__(self, rho: float = .03, q: float = 1, gamma: float = 1, theta: float = 2, inf: float = 1e100, top: Optional[int] = None, plugins=None) -> None:
-        self.rho: float = rho
-        self.q: float = q
-        self.top: Optional[int] = top
-        self.gamma: float = gamma
-        self.theta: float = theta
-        self.inf: float = inf
+    def __init__(self, parameter: Parameter, plugins=None) -> None:
+        # def __init__(self, rho: float = .03, q: float = 1, gamma: float = 1, theta: float = 2, inf: float = 1e100, R: int = 0, top: Optional[int] = None, plugins=None) -> None:
+        self.rho: float = parameter["rho"]
+        self.q: float = parameter["q"]
+        self.top: Optional[int] = parameter["top"]
+        self.gamma: float = parameter["gamma"]
+        self.theta: float = parameter["theta"]
+        self.inf: float = parameter["inf"]
+        self.limit: int = parameter["limit"]
+        self.gen_size: int = parameter["gen_size"]
+        self.R: Final[int] = parameter["R"]
+        self.is_best_opt: bool = parameter["is_best_opt"]
+        self.is_res: bool = parameter["is_res"]
+        self.is_update: bool = parameter["is_update"]
+        self.is_multiple: bool = parameter["is_multiple"]
+        self.parameter: Parameter = parameter
         self.plugins: OrderedDict = OrderedDict()
         self.state: Optional[State] = None
         if plugins:
@@ -40,35 +50,35 @@ class Solver:
 
     def __repr__(self) -> str:
         return (f'{self.__class__.__name__}(rho={self.rho}, q={self.q}, gamma={self.gamma} theta={self.theta}'
-                f'top={self.top})')
+                f'top={self.top}, R={self.R})')
 
-    def solve(self, graph: Graph, colony: Colony, limit: int, *args, **kwargs) -> Solution:
+    def solve(self, graph: Graph, colony: Colony, problem: Problem, graph_name: str) -> Solution:
         best = None
-        for solution in self.optimize(graph, colony, limit, *args, **kwargs):
+        for solution in self.optimize(graph, colony, problem, graph_name):
             best = solution
         return best
 
-    def optimize(self, graph: Graph, colony: Colony, limit: int, gen_size: Optional[int] = None, problem: Optional[Problem] = None, is_update: bool = False, is_best_opt: bool = False, is_res: bool = False, graph_name: str = '') -> Solution:
-        gen_size: int = gen_size or len(graph.nodes)
-        ants: List[Ant] = colony.get_ants(gen_size)
+    def optimize(self, graph: Graph, colony: Colony, problem: Problem, graph_name: str) -> Solution:
+        # def optimize(self, graph: Graph, colony: Colony, gen_size: Optional[int] = None, problem: Optional[Problem] = None, is_update: bool = False, is_best_opt: bool = False, is_res: bool = False, graph_name: str = '') -> Solution:
+        ants: List[Ant] = colony.get_ants(self.gen_size)
         bar_str: Final[str] = "----------------"
         prev_cost: float = self.inf
-        state: State = State(graph=copy.deepcopy(graph), ants=ants, limit=limit, gen_size=gen_size,
+        state: State = State(graph=copy.deepcopy(graph), ants=ants, limit=self.limit, gen_size=self.gen_size,
                              colony=colony, rho=self.rho, q=self.q, top=self.top, problem=problem, gamma=self.gamma,
-                             theta=self.theta, inf=self.inf, is_update=is_update, is_res=is_res, is_best_opt=is_best_opt)
+                             theta=self.theta, inf=self.inf, R=self.R, is_update=self.is_update, is_res=self.is_res, is_best_opt=self.is_best_opt, is_multiple=self.is_multiple)
 
         self._call_plugins('start', state=state)
         logger.info(f"{bar_str} optimize begin {bar_str}")
 
-        for iterate_index in utils.looper(limit):
+        for iterate_index in utils.looper(self.limit):
 
             grapher: Grapher = Grapher(graph)
 
-            solution: Solution = self.find_solution(graph, state.ants, grapher, is_res=is_res)
+            solution: Solution = self.find_solution(graph, state.ants, grapher, is_res=self.is_res)
 
             self._call_plugins('before', state=state)
 
-            if is_best_opt:
+            if self.is_best_opt:
                 self.best_opt2(graph, solution, grapher)
 
             if solution.duplicate > 0:
@@ -78,7 +88,7 @@ class Solver:
                 state.success_cnt += 1
                 state.success_indices.append(iterate_index)
 
-            if is_update:
+            if self.is_update:
                 self.pheromone_update(solution, state, graph)
 
             if prev_cost > solution.cost:
@@ -108,10 +118,10 @@ class Solver:
 
         logger.info(f"{bar_str} result {bar_str}")
         logger.info(f"[GRAPH_NAME] {graph_name} ")
-        logger.info(f"[NUM_OF_ANTS] {gen_size} ")
+        logger.info(f"[NUM_OF_ANTS] {self.gen_size} ")
         logger.info(f"[TIME] {state.elapsed} ")
-        logger.info(f"[UPDATE] update:{is_update} 2-best:{is_best_opt} res:{is_res}")
-        logger.info(f"[PARAMETERS] gamma:{state.gamma} theta:{state.theta} rho:{state.rho} limit:{limit}")
+        logger.info(f"[UPDATE] update:{self.is_update} 2-best:{self.is_best_opt} res:{self.is_res}")
+        logger.info(f"[PARAMETERS] gamma:{state.gamma} theta:{state.theta} rho:{state.rho} limit:{self.limit}")
         logger.info(f"[COUNT] Improve:{state.improve_cnt} Failure:{state.fail_cnt} Success:{state.success_cnt}")
         if state.best_solution is not None:
             logger.info(f"[BEST_SOLUTION] average:{state.best_solution.avg} sd:{state.best_solution.sd} sum:{state.best_solution.sum} cost:{state.best_solution.cost}")
@@ -147,17 +157,16 @@ class Solver:
         return solution
 
     def pheromone_update(self, solution: Solution, state: State, graph: Graph) -> None:
-        dup = solution.duplicate
+        dup = max(0, solution.duplicate - self.R)
         logger.info(f"[DUPLICATE] {dup}")
-        if dup == 0:
-            next_pheromones: DefaultDict[Tuple[int, int], float] = defaultdict(float)
-            for circuit in solution:
-                for edge in circuit:
-                    r = Grapher.minmax(edge)
-                    next_pheromones[r] += self.q / solution.cost
-            for edge in state.graph.edges:
-                p = graph.edges[edge]['pheromone']
-                graph.edges[edge]['pheromone'] = (1 - self.rho) * p + next_pheromones[edge]
+        next_pheromones: DefaultDict[Tuple[int, int], float] = defaultdict(float)
+        for circuit in solution:
+            for edge in circuit:
+                r = Grapher.minmax(edge)
+                next_pheromones[r] += self.q / (solution.cost * (2 ** dup))
+        for edge in state.graph.edges:
+            p = graph.edges[edge]['pheromone']
+            graph.edges[edge]['pheromone'] = (1 - self.rho) * p + next_pheromones[edge]
 
     def best_opt2(self, graph: Graph, solution: Solution, grapher: Grapher) -> None:
         best_opt2(graph, solution, grapher)

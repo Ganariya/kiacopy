@@ -1,21 +1,27 @@
+import os
+
 import acopy
 import kiacopy
 import tsplib95
 from logging import getLogger, StreamHandler, DEBUG
+from kiacopy.parameter import Parameter
 
 logger = getLogger()
 logger.addHandler(StreamHandler())
 logger.setLevel(DEBUG)
 
-
-problem = tsplib95.load_problem('bays29.tsp')
+graph_name: str = 'bays29.tsp'
+problem = tsplib95.load_problem(graph_name)
 G = problem.get_graph()
 
 solver = acopy.Solver()
 colony = acopy.Colony()
 
-solver.solve(G, colony, limit=200)
+solver.solve(G, colony, limit=100)
 
-solver = kiacopy.Solver()
+config_path = os.path.join(os.path.dirname(__file__), 'config', 'heavily.yaml')
+parameter: Parameter = Parameter(yaml_path=config_path)
+
+solver = kiacopy.Solver(parameter=parameter)
 colony = kiacopy.Colony()
-solver.solve(G, colony, gen_size=5, limit=300, is_best_opt=True, is_update=True)
+solver.solve(G, colony, problem, graph_name)
