@@ -2,7 +2,7 @@ import math
 from typing import List, Set, Tuple, Literal
 from kiacopy.circuit import Circuit
 
-COST_KIND = Literal["weighted", "avg", "sd", "sum"]
+COST_KIND = Literal["weighted", "avg", "sd", "sum", "variance"]
 
 
 class Solution(List[Circuit]):
@@ -22,7 +22,7 @@ class Solution(List[Circuit]):
         self.cost_kind: COST_KIND = cost_kind
 
     def __repr__(self) -> str:
-        text = f"K = {len(self)}, avg={self.avg}, sd={self.sd}, sum={self.sum}, cost={self.cost} \n"
+        text = f"K = {len(self)}, avg={self.avg}, sd={self.sd}, variance={self.variance}, sum={self.sum}, cost={self.cost} \n"
         text += "  ".join([str(s.cost) for s in self])
         text += "\n"
         return text
@@ -39,9 +39,13 @@ class Solution(List[Circuit]):
 
     @property
     def sd(self) -> float:
+        return math.sqrt(self.variance)
+
+    @property
+    def variance(self) -> float:
         avg = self.avg
-        sd: float = sum([(s.cost - avg) ** 2 for s in self]) / len(self)
-        return math.sqrt(sd)
+        variance: float = sum([(s.cost - avg) ** 2 for s in self]) / len(self)
+        return variance
 
     @property
     def sum(self) -> float:
