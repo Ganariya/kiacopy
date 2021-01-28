@@ -11,7 +11,7 @@ from kiacopy import utils
 from kiacopy.grapher import Grapher
 from kiacopy.ants import Ant
 from kiacopy.state import State
-from kiacopy.solution import Solution
+from kiacopy.solution import Solution, COST_KIND
 from kiacopy.colony import Colony
 from kiacopy.solverplugin import SolverPlugin
 from kiacopy.best_opt2 import best_opt2
@@ -28,7 +28,6 @@ class Solver:
     """
 
     def __init__(self, parameter: Parameter, plugins=None) -> None:
-        # def __init__(self, rho: float = .03, q: float = 1, gamma: float = 1, theta: float = 2, inf: float = 1e100, R: int = 0, top: Optional[int] = None, plugins=None) -> None:
         self.rho: float = parameter["rho"]
         self.q: float = parameter["q"]
         self.top: Optional[int] = parameter["top"]
@@ -38,6 +37,7 @@ class Solver:
         self.limit: int = parameter["limit"]
         self.gen_size: int = parameter["gen_size"]
         self.R: Final[int] = parameter["R"]
+        self.cost_kind: COST_KIND = parameter["cost_kind"]
         self.is_best_opt: bool = parameter["is_best_opt"]
         self.is_res: bool = parameter["is_res"]
         self.is_update: bool = parameter["is_update"]
@@ -50,7 +50,7 @@ class Solver:
 
     def __repr__(self) -> str:
         return (f'{self.__class__.__name__}(rho={self.rho}, q={self.q}, gamma={self.gamma} theta={self.theta}'
-                f'top={self.top}, R={self.R})')
+                f'top={self.top}, R={self.R}), limit={self.limit}')
 
     def solve(self, graph: Graph, colony: Colony, problem: Problem, graph_name: str) -> Solution:
         best = None
@@ -59,7 +59,6 @@ class Solver:
         return best
 
     def optimize(self, graph: Graph, colony: Colony, problem: Problem, graph_name: str) -> Solution:
-        # def optimize(self, graph: Graph, colony: Colony, gen_size: Optional[int] = None, problem: Optional[Problem] = None, is_update: bool = False, is_best_opt: bool = False, is_res: bool = False, graph_name: str = '') -> Solution:
         ants: List[Ant] = colony.get_ants(self.gen_size)
         bar_str: Final[str] = "----------------"
         prev_cost: float = self.inf
@@ -73,23 +72,22 @@ class Solver:
         for iterate_index in utils.looper(self.limit):
 
             grapher: Grapher = Grapher(graph)
-
             solution: Solution = self.find_solution(graph, state.ants, grapher, is_res=self.is_res)
 
             self._call_plugins('before', state=state)
 
             if self.is_best_opt:
                 self.best_opt2(graph, solution, grapher)
-
-            if solution.duplicate > 0:
-                state.fail_cnt += 1
-                state.fail_indices.append(iterate_index)
-            else:
-                state.success_cnt += 1
-                state.success_indices.append(iterate_index)
-
             if self.is_update:
                 self.pheromone_update(solution, state, graph)
+
+            duplicate: int = max(0, solution.duplicate - self.R)
+            if duplicate == 0:
+                state.success_cnt += 1
+                state.success_indices.append(iterate_index)
+            else:
+                state.fail_cnt += 1
+                state.fail_indices.append(iterate_index)
 
             if prev_cost > solution.cost:
                 prev_cost: float = solution.cost
@@ -103,8 +101,8 @@ class Solver:
             state.solution = solution
             state.ants = ants
             state.circuits = list(solution)
-
             state.graph = copy.deepcopy(graph)
+            state.duplicate_indicates.append(duplicate)
 
             self._call_plugins('iteration', state=state)
 
@@ -148,22 +146,24 @@ class Solver:
             for ant in ants:
                 ant.move()
             ants.sort(key=lambda x: x.circuit.cost, reverse=True)
+        # for ant in ants:
+        #     for i in range(len(graph.nodes) - 1):
+        #         ant.move()
         for ant in ants:
             ant.circuit.close()
             ant.erase(ant.circuit.nodes[-1], ant.circuit.nodes[0])
-        solution: Solution = Solution(self.gamma, self.theta, self.inf)
+        solution: Solution = Solution(self.gamma, self.theta, self.inf, self.cost_kind)
         for ant in ants:
             solution.append(ant.circuit)
         return solution
 
     def pheromone_update(self, solution: Solution, state: State, graph: Graph) -> None:
-        dup = max(0, solution.duplicate - self.R)
-        logger.info(f"[DUPLICATE] {dup}")
+        dup: int = max(0, solution.duplicate - self.R)
         next_pheromones: DefaultDict[Tuple[int, int], float] = defaultdict(float)
         for circuit in solution:
             for edge in circuit:
                 r = Grapher.minmax(edge)
-                next_pheromones[r] += self.q / (solution.cost * (2 ** dup))
+                next_pheromones[r] += self.q / ((solution.cost + circuit.cost) * (2 ** dup))
         for edge in state.graph.edges:
             p = graph.edges[edge]['pheromone']
             graph.edges[edge]['pheromone'] = (1 - self.rho) * p + next_pheromones[edge]
