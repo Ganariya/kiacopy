@@ -22,7 +22,7 @@ class Solution(List[Circuit]):
         self.cost_kind: COST_KIND = cost_kind
 
     def __repr__(self) -> str:
-        text = f"K = {len(self)}, avg={self.avg}, sd={self.sd}, variance={self.variance}, sum={self.sum}, cost={self.cost} \n"
+        text = f"K={len(self)}, avg={self.avg}, sd={self.sd}, variance={self.variance}, sum={self.sum}, cost_kind={self.cost_kind}, cost={self.cost} \n"
         text += "  ".join([str(s.cost) for s in self])
         text += "\n"
         return text

@@ -122,7 +122,7 @@ class Solver:
         logger.info(f"[PARAMETERS] gamma:{state.gamma} theta:{state.theta} rho:{state.rho} limit:{self.limit}")
         logger.info(f"[COUNT] Improve:{state.improve_cnt} Failure:{state.fail_cnt} Success:{state.success_cnt}")
         if state.best_solution is not None:
-            logger.info(f"[BEST_SOLUTION] average:{state.best_solution.avg} sd:{state.best_solution.sd} sum:{state.best_solution.sum} cost:{state.best_solution.cost}")
+            logger.info(f"[BEST_SOLUTION] solution:{solution}")
             for idx, circuit in enumerate(state.best_solution):
                 logger.info(f"circuit-{idx} {circuit}")
         logger.info(f"{bar_str} end {bar_str}")

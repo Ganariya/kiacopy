@@ -181,7 +181,6 @@ class ConvertStateToJson(SolverPlugin):
         result['gamma'] = state.gamma
         result['theta'] = state.theta
         result['inf'] = state.inf
-        result['sd_base'] = state.sd_base
         result['elapsed'] = state.elapsed
         result['is_update'] = state.is_update
         result['is_res'] = state.is_res

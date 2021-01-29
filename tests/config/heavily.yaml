@@ -7,7 +7,7 @@ limit: 200
 inf: 1.0e+50
 gen_size: 8
 R: 5
-cost_kind: weighted
+cost_kind: sum
 
 # Colony
 alpha: 1

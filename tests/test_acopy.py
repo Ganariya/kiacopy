@@ -1,10 +1,10 @@
 import os
+from logging import getLogger, StreamHandler, DEBUG
 
 import acopy
 import kiacopy
 import tsplib95
-import yaml
-from logging import getLogger, StreamHandler, DEBUG
+
 from kiacopy.parameter import Parameter
 
 logger = getLogger()
@@ -24,5 +24,13 @@ config_path = os.path.join(os.path.dirname(__file__), 'config', 'normal.yaml')
 parameter: Parameter = Parameter.create(config_path)
 
 solver = kiacopy.Solver(parameter=parameter)
+recorder = kiacopy.plugins.StatsRecorder('results')
+plotter = kiacopy.utils.plot.Plotter(stats=recorder.stats)
+drawer = kiacopy.plugins.DrawGraph(problem=problem)
+converter = kiacopy.plugins.ConvertStateToJson(save_path='results')
+solver.add_plugins(recorder, drawer, converter)
+
 colony = kiacopy.Colony()
 solver.solve(G, colony, problem, graph_name)
+
+plotter.plot()
