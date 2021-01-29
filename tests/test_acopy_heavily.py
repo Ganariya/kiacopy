@@ -20,7 +20,7 @@ colony = acopy.Colony()
 solver.solve(G, colony, limit=100)
 
 config_path = os.path.join(os.path.dirname(__file__), 'config', 'heavily.yaml')
-parameter: Parameter = Parameter(yaml_path=config_path)
+parameter: Parameter = Parameter.create(config_path)
 
 solver = kiacopy.Solver(parameter=parameter)
 colony = kiacopy.Colony()
