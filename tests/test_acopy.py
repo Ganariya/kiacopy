@@ -26,7 +26,7 @@ parameter: Parameter = Parameter.create(config_path)
 solver = kiacopy.Solver(parameter=parameter)
 recorder = kiacopy.plugins.StatsRecorder('results')
 plotter = kiacopy.utils.plot.Plotter(stats=recorder.stats)
-drawer = kiacopy.plugins.DrawGraph(problem=problem)
+drawer = kiacopy.plugins.DrawGraph(problem=problem, is_each=True, is_label=True, is_consecutive=True)
 converter = kiacopy.plugins.ConvertStateToJson(save_path='results')
 solver.add_plugins(recorder, drawer, converter)
 

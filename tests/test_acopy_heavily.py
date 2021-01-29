@@ -3,12 +3,12 @@ import os
 import acopy
 import kiacopy
 import tsplib95
-from logging import getLogger, StreamHandler, DEBUG
+from logging import getLogger, StreamHandler, DEBUG, INFO
 from kiacopy.parameter import Parameter
 
 logger = getLogger()
 logger.addHandler(StreamHandler())
-logger.setLevel(DEBUG)
+logger.setLevel(INFO)
 
 graph_name: str = 'bays29.tsp'
 problem = tsplib95.load_problem(graph_name)
@@ -25,7 +25,7 @@ parameter: Parameter = Parameter.create(config_path)
 solver = kiacopy.Solver(parameter=parameter)
 recorder = kiacopy.plugins.StatsRecorder('results')
 plotter = kiacopy.utils.plot.Plotter(stats=recorder.stats)
-drawer = kiacopy.plugins.DrawGraph(problem=problem)
+drawer = kiacopy.plugins.DrawGraph(problem=problem, is_each=True, is_label=True)
 converter = kiacopy.plugins.ConvertStateToJson(save_path='results')
 solver.add_plugins(recorder, drawer, converter)
 

@@ -122,7 +122,7 @@ class Solver:
         logger.info(f"[PARAMETERS] gamma:{state.gamma} theta:{state.theta} rho:{state.rho} limit:{self.limit}")
         logger.info(f"[COUNT] Improve:{state.improve_cnt} Failure:{state.fail_cnt} Success:{state.success_cnt}")
         if state.best_solution is not None:
-            logger.info(f"[BEST_SOLUTION] solution:{solution}")
+            logger.info(f"[BEST_SOLUTION] solution:{state.best_solution}")
             for idx, circuit in enumerate(state.best_solution):
                 logger.info(f"circuit-{idx} {circuit}")
         logger.info(f"{bar_str} end {bar_str}")
@@ -142,10 +142,13 @@ class Solver:
         """
         for ant in ants:
             ant.init_solution(graph, inf=self.inf, is_res=is_res, theta=self.theta, grapher=grapher)
+        # sdの場合
         for i in range(len(graph.nodes) - 1):
             for ant in ants:
                 ant.move()
-            ants.sort(key=lambda x: x.circuit.cost, reverse=True)
+            ants.sort(key=lambda x: x.circuit.cost, reverse=False)
+
+        # sumの場合
         # for ant in ants:
         #     for i in range(len(graph.nodes) - 1):
         #         ant.move()

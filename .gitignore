@@ -110,3 +110,4 @@ json_data/
 check.py
 
 .DS_Store
+tests/results
