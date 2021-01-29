@@ -28,20 +28,20 @@ class Solver:
     """
 
     def __init__(self, parameter: Parameter, plugins=None) -> None:
-        self.rho: float = parameter["rho"]
-        self.q: float = parameter["q"]
-        self.top: Optional[int] = parameter["top"]
-        self.gamma: float = parameter["gamma"]
-        self.theta: float = parameter["theta"]
-        self.inf: float = parameter["inf"]
-        self.limit: int = parameter["limit"]
-        self.gen_size: int = parameter["gen_size"]
-        self.R: Final[int] = parameter["R"]
-        self.cost_kind: COST_KIND = parameter["cost_kind"]
-        self.is_best_opt: bool = parameter["is_best_opt"]
-        self.is_res: bool = parameter["is_res"]
-        self.is_update: bool = parameter["is_update"]
-        self.is_multiple: bool = parameter["is_multiple"]
+        self.rho: float = parameter.rho
+        self.q: float = parameter.q
+        self.top: Optional[int] = parameter.top
+        self.gamma: float = parameter.gamma
+        self.theta: float = parameter.theta
+        self.inf: float = parameter.inf
+        self.limit: int = parameter.limit
+        self.gen_size: int = parameter.gen_size
+        self.R: Final[int] = parameter.R
+        self.cost_kind: COST_KIND = parameter.cost_kind
+        self.is_best_opt: bool = parameter.is_best_opt
+        self.is_res: bool = parameter.is_res
+        self.is_update: bool = parameter.is_update
+        self.is_multiple: bool = parameter.is_multiple
         self.parameter: Parameter = parameter
         self.plugins: OrderedDict = OrderedDict()
         self.state: Optional[State] = None

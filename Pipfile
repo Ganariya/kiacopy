@@ -12,6 +12,7 @@ matplotlib = "*"
 pandas = "*"
 acopy = "*"
 pyyaml = "*"
+pydantic = "*"
 
 [dev-packages]
 wheel = "*"

@@ -22,6 +22,3 @@ is_best_opt: True
 is_res: False
 is_update: True
 is_multiple: True
-
-# None
-top: None
