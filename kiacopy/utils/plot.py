@@ -55,6 +55,10 @@ class Plotter:
         self.plot_weighted(linestyle='None', marker='.')
 
         plt.figure()
+        plt.title('Duplicated')
+        self.plot_duplicated(linestyle='None', marker='.')
+
+        plt.figure()
         plt.title('Edge Pheromone (stats)')
         self.plot_edge_pheromone()
 

@@ -20,5 +20,5 @@ tau_0: 0.01
 # is
 is_best_opt: True
 is_res: False
-is_update: True
+is_update: False:
 is_multiple: True

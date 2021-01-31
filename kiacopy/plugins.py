@@ -503,6 +503,9 @@ class StatsRecorder(SolverPlugin):
             'weighted': {
                 'weighted_cost': None
             },
+            'duplicated': {
+                'duplicated': None
+            },
             'unique_solutions': {
                 'total': len(self.data['circuits']),
                 'iteration': 0,
@@ -558,6 +561,9 @@ class StatsRecorder(SolverPlugin):
             },
             'weighted': {
                 'weighted_cost': state.solution.cost if state.solution.cost <= 1e30 else None,
+            },
+            'duplicated': {
+                'duplicated': state.duplicate_indicates[-1]
             },
             'unique_solutions': {
                 'total': len(self.data['circuits']),
