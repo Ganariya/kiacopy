@@ -6,7 +6,7 @@ flake8==3.8.3
 tox==3.21.1
 coverage==5.2.1
 Sphinx==3.4.3
-twine==3.2.0
+twine==3.4.1
 Click==7.1.2
 tsplib95==0.7.1
 networkx==2.4
