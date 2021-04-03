@@ -1,6 +1,6 @@
 click==7.1.2
 matplotlib==3.3.0
-networkx==2.4
+networkx==2.5.1
 numpy==1.19.2
 tsplib95==0.7.1
 acopy
